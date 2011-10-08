@@ -7,7 +7,7 @@ Sep 2011
 import numpy as np
 import pyfits
 
-def load_multiple_fits(flist, hdunum=0, verbose=False, transpose=False, **kwargs):
+def load_multiple_fits(flist, hdunum=0, verbose=False, **kwargs):
   """ Read in all the FITS files specified in flist, 
   reading in HDU hdnum, and fill a 
   numpy array with it. 
@@ -21,8 +21,6 @@ def load_multiple_fits(flist, hdunum=0, verbose=False, transpose=False, **kwargs
       print "Processing %s now......"%fn
     cc = pyfits.open(fn, memmap=True)
     dat = cc[hdunum].data
-    if transpose :
-      dat = dat.T.copy() 
     if comb is None :
       comb = np.zeros((dat.shape[0], dat.shape[1], len(flist)), dtype='f8')
       savsize = dat.shape
@@ -49,4 +47,7 @@ def median_combine(flist=None, arr=None, axis=-1, **kwargs):
     raise SyntaxError, 'Specify either flist or arr'
   return np.median(arr, axis=axis)
 
+
+def transpImage(arr):
+  return arr.T.copy()
 
