@@ -54,7 +54,7 @@ def _generate_gaussian_kernel(x, y, sigma, select):
 
 def generate_hessian(A, sigma, verbose=False):
   """Generate the Hessian matrix
-  This returns a [6, Nx+2, Ny+2] array with the following
+  This returns a [Nx+2, Ny+2, 6] array with the following
   elements
    1 = Ix, 2 = Iy
    2 = Ixx, 3=Iyy, 4 = Ixy, 5 = Iyx
@@ -72,7 +72,7 @@ def generate_hessian(A, sigma, verbose=False):
   nx, ny = A.shape
 
   # Allocate the output
-  hess = np.zeros((6, nx+2, ny+2), dtype='f8')
+  hess = np.zeros((nx+2, ny+2, 6), dtype='f8')
 
 
   # Zero pad A
@@ -93,7 +93,7 @@ def generate_hessian(A, sigma, verbose=False):
     kernel = _generate_gaussian_kernel(xcoord, ycoord, sigma, select1)
     kft = np.fft.rfft2(kernel)
     val = np.fft.irfft2(A1fft*kft)
-    hess[ii, 1:nx+1, 1:ny+1] = val[0:nx,0:ny] # Remove padding
+    hess[1:nx+1, 1:ny+1, ii[0]] = val[0:nx,0:ny] # Remove padding
     if verbose :
       print 'Completed %s'%select1
 
