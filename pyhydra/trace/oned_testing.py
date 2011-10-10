@@ -1,3 +1,12 @@
+""" This is to get me well oriented with the method, none of this is
+production, or even development code.
+
+
+Nikhil Padmanabhan
+"""
+
+
+
 import ROOTpy as R
 
 
