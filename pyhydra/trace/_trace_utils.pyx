@@ -25,7 +25,7 @@ cdef extern from "math.h" :
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-cpdef double jacobi2x2(np.ndarray[np.float64_t, ndim=1] arr):
+cpdef np.ndarray[np.float64_t, ndim=1] jacobi2x2(np.ndarray[np.float64_t, ndim=1] arr):
   """ Compute the maximum eigenvalue and corresponding
   eigenvector of a 2x2 matrix.
 
@@ -54,16 +54,19 @@ cpdef double jacobi2x2(np.ndarray[np.float64_t, ndim=1] arr):
   e1 = c*c*rxx +  s*s*ryy - 2*c*s*rxy
   e2 = s*s*rxx + c*c*ryy + 2*c*s*rxy
 
-  if fabs(e1) > fabs(e2) :
-    arr[3] = e1
-    arr[4] = c
-    arr[5] = -s
-  else :
-    arr[3] = e2
-    arr[4] = s
-    arr[5] = c
+  cdef np.ndarray[np.float64_t, ndim=1] out
+  out = np.zeros(3, dtype='f8')
 
-  return arr[3]
+  if fabs(e1) > fabs(e2) :
+    out[0] = e1
+    out[1] = c
+    out[2] = -s
+  else :
+    out[0] = e2
+    out[1] = s
+    out[2] = c
+
+  return out
 
 
 
