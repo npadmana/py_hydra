@@ -14,6 +14,7 @@ Nikhil Padmanabhan, Yale, 2011
 """
 
 import numpy as np
+import _trace_utils 
 
 def _gauss(x,y, sigma):
   norm = 1./(2.0*np.pi*sigma**2)
