@@ -102,5 +102,36 @@ def generate_hessian(A, sigma, verbose=False):
   return hess
 
 
+def salient(hess, lower=0.02, upper=0.1, pad=5, eps=0.03, rel=True):
+  """
+  hess : Hessian structure from generate_hessian
+  lower : lower bound -- for line following
+          points must have 2nd derivs < lower
+  upper :
+          upper bound to define salient points, for line starts
+          points must have 2nd derivs < upper
+  rel : 
+        if True, then lower and upper are fractions of the most negative eigenvalue
+        and should be positive. Otherwise these are absolute #s.
+  pad :
+        Padding around edges; no salient points defined here.
+  eps :
+        allow subgrid center to be outside pixel by eps
+  """
+  rmin = _trace_utils._do_jacobi2x2_all(hess)
+
+  print "Minimum eigenvalue : %f"%rmin
+  if rmin >= 0 :
+    raise RuntimeError, 'rmin is not less than zero'
+
+  if rel :
+    up = upper * rmin
+    low = lower * rmin
+  else :
+    up = upper
+    low = lower
+
+  _trace_utils._saliency(hess, up, low, eps, pad)
+
 
 

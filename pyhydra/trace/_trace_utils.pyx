@@ -82,7 +82,7 @@ cdef double jacobi2x2(np.ndarray[np.float64_t, ndim=1] arr):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
-cpdef _saliency(np.ndarray[np.float64_t, ndim=3] hess, double upper, double lower, double eps, long pad):
+cpdef double _do_jacobi2x2_all(np.ndarray[np.float64_t, ndim=3] hess):
   cdef long nx, ny, ix, iy
   cdef double rmin, emin
   rmin = 0.0
@@ -98,17 +98,26 @@ cpdef _saliency(np.ndarray[np.float64_t, ndim=3] hess, double upper, double lowe
       if rmin > emin :
         rmin = emin
 
-  if rmin >= 0.0 :
-    raise RuntimeError, 'rmin not less that zero'
+  return rmin
 
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cpdef _saliency(np.ndarray[np.float64_t, ndim=3] hess, double upper, double lower, double eps, long pad):
+  cdef long nx, ny, ix, iy
+
+  # Get the size of the array
+  nx = hess.shape[0]-2
+  ny = hess.shape[1]-2
 
   # Loop over all the points again 
   for ix in range(1+pad, nx+1-pad):
     for iy in range(1+pad, ny+1-pad):
-      if hess[ix, iy, 0] < (lower * rmin) :
+      if hess[ix, iy, 0] < lower :
         if fabs(hess[ix, iy, 2]) < (0.5 + eps) :
           if fabs(hess[ix, iy, 3]) < (0.5 + eps) :
-            if hess[ix, iy, 0] < (upper*rmin) :
+            if hess[ix, iy, 0] < upper :
               hess[ix,iy,4] = 2
             else :
               hess[ix,iy,4] = 1
