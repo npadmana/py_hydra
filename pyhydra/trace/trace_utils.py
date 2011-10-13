@@ -132,6 +132,7 @@ def salient(hess, lower=0.02, upper=0.1, pad=5, eps=0.03, rel=True):
     low = lower
 
   _trace_utils._saliency(hess, up, low, eps, pad)
+  _trace_utils._remove_coincident(hess, eps*2.0)
 
 
 

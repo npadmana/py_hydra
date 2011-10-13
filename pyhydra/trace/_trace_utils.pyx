@@ -125,5 +125,53 @@ cpdef _saliency(np.ndarray[np.float64_t, ndim=3] hess, double upper, double lowe
 
 
 
+# Remove coincident points. This may end up with semi-subtle race conditions 
+# but we aren't going to solve that now!
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cpdef _remove_coincident(np.ndarray[np.float64_t, ndim=3] hess, double eps):
+  cdef long nx, ny, ix, iy, ix1, iy1
+  cdef double x1, y1, dx, dy
 
+  # Get the size of the array
+  nx = hess.shape[0]-2
+  ny = hess.shape[1]-2
 
+  # Loop over all the points again 
+  for ix in range(1, nx+1):
+    for iy in range(1, ny+1):
+      # If this is not a salient point, keep going
+      if hess[ix, iy, 4] == 0 :
+        continue
+
+      # Compute subgrid position of this point
+      x0 = hess[ix,iy,2]
+      y0 = hess[ix,iy,3]
+
+      # Now loop over all the neighbours
+      for ix1 in range(-1, 2):
+        for iy1 in range(-1, 2):
+          # Ignore myself
+          if (ix1 == 0) and (iy1 == 0):
+            continue
+
+          # Ignore if not a salient point
+          if hess[ix+ix1, iy+iy1, 4] == 0:
+            continue
+
+          #Compute subgrid position of this point
+          x1 = ix1 + hess[ix+ix1, iy+iy1, 2]
+          y1 = iy1 + hess[ix+ix1, iy+iy1, 3]
+          # Differences
+          dx = fabs(x1-x0)
+          dy = fabs(y1-y0)
+
+          # If these points are truly coincident
+          # and the current point hasn't been reset
+          if (dx < eps) and (dy < eps) and hess[ix,iy,4] > 0:
+            if hess[ix, iy, 0] <= hess[ix+ix1, iy+iy1, 0]:
+              hess[ix+ix1, iy+iy1, 4] = 0
+            else :
+              hess[ix,iy,4] = 0
+          
