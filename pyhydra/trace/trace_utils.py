@@ -139,3 +139,45 @@ def grow_line(hess, ix, iy):
   l1, l2 = _trace_utils._grow_line(hess, ix, iy)
   l2.reverse()
   return  l2 + l1
+
+
+def find_all_lines(hess):
+  # Define the line list
+  ll = []
+
+  # Get the list of points that are good starting points
+  wgood = np.nonzero(hess[:,:,4] == 2)
+  if len(wgood[0]) == 0:
+    raise ValueError, 'No salient points found'
+
+
+  ixx, iyy = wgood[0], wgood[1]
+  val = hess[ixx, iyy, 0] # Get the minimum point
+
+  remain = True
+  count = 0
+  while remain :
+    # Get the line
+    tmp = val.argmin()
+    ix0, iy0 = ixx[tmp], iyy[tmp]
+    print 'Constructing line %i ......'%(count+1,)
+    print 'Initial position %i, %i, value = %f'%(ix0, iy0, val[tmp])
+    out = grow_line(hess, ix0, iy0)
+    print 'Line length is %i'%len(out)
+    count += 1
+    ll.append(out)
+
+    # Now update the list of good points
+    wgood = np.nonzero(hess[ixx, iyy, 4] == 2)
+    if len(wgood[0]) == 0 :
+      remain = False
+    else :
+      ixx = ixx[wgood]
+      iyy = iyy[wgood]
+      val = val[wgood]
+
+
+  print 'Done......'
+  print 'Found %i lines....'%count
+
+  return ll
