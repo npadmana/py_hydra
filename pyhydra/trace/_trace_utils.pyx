@@ -21,6 +21,7 @@ cdef extern from "math.h" :
   double sin(double)
   double cos(double)
   double fabs(double)
+  double sqrt(double)
 
 # Turn off error checking!!
 @cython.boundscheck(False)
@@ -174,4 +175,106 @@ cpdef _remove_coincident(np.ndarray[np.float64_t, ndim=3] hess, double eps):
               hess[ix+ix1, iy+iy1, 4] = 0
             else :
               hess[ix,iy,4] = 0
-          
+
+
+
+# This uses the default d + c\beta metric for choosing points
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
+  cdef double x0, y0, dx, dy, beta, r
+  cdef int ix, iy, ii, jj
+  cdef int imin, jmin
+  
+  donext = True
+
+  # Starting point
+  ix = ix0
+  iy = iy0
+  x0 = ix0 + hess[ix, iy, 2]
+  y0 = iy0 + hess[ix, iy, 3]
+
+  # Start the line list
+  line_f = [(x0-1, y0-1)] # We padded to avoid the need to deal with edges
+
+  # Nark the first point as assigned
+  hess[ix, iy, 4] = -1
+
+  # Loop until we have no more new points
+  while donext :
+    # Define rmin
+    rmin = None 
+
+    # Now loop over all neighbours
+    for ii in range(-1, 2):
+      for jj in range(-1, 2):
+        # Ignore self point
+        if (ii==0) and (jj == 0) :
+          continue
+        if hess[ix+ii, iy+jj, 4] > 0 :  # Is this a line point
+          # Compute the distance
+          dx = hess[ix+ii, iy+jj, 2] + ix + ii - x0
+          dy = hess[ix+ii, iy+jj, 3] + iy + jj - y0
+          r = sqrt(dx*dx+dy*dy)
+
+          if (rmin is None) or (r < rmin):
+            rmin = r
+            imin = ii
+            jmin = jj
+
+    # If rmin doesn't get set, close down 
+    if rmin is None :
+      donext = False
+    else :
+      ix += imin
+      iy += jmin
+      x0 = ix + hess[ix, iy, 2]
+      y0 = iy + hess[ix, iy, 3]
+      hess[ix, iy, 4] = -2
+      line_f.append((x0-1, y0-1))
+
+
+  # Set up for the reverse line
+  line_r = []
+  donext = True
+  ix = ix0
+  iy = iy0
+  x0 = ix0 + hess[ix, iy, 2]
+  y0 = iy0 + hess[ix, iy, 3]
+  while donext :
+    # Define rmin
+    rmin = None 
+
+    # Now loop over all neighbours
+    for ii in range(-1, 2):
+      for jj in range(-1, 2):
+        # Ignore self point
+        if (ii==0) and (jj == 0) :
+          continue
+        if hess[ix+ii, iy+jj, 4] > 0 :  # Is this a line point
+          # Compute the distance
+          dx = hess[ix+ii, iy+jj, 2] + ix + ii - x0
+          dy = hess[ix+ii, iy+jj, 3] + iy + jj - y0
+          r = sqrt(dx*dx+dy*dy)
+
+          if (rmin is None) or (r < rmin):
+            rmin = r
+            imin = ii
+            jmin = jj
+
+    # If rmin doesn't get set, close down 
+    if rmin is None :
+      donext = False
+    else :
+      ix += imin
+      iy += jmin
+      x0 = ix + hess[ix, iy, 2]
+      y0 = iy + hess[ix, iy, 3]
+      hess[ix, iy, 4] = -2
+      line_r.append((x0-1, y0-1))
+
+
+
+  # Return
+  return (line_f, line_r)

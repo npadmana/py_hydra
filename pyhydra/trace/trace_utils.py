@@ -135,4 +135,7 @@ def salient(hess, lower=0.02, upper=0.1, pad=5, eps=0.03, rel=True):
   _trace_utils._remove_coincident(hess, eps*2.0)
 
 
-
+def grow_line(hess, ix, iy):
+  l1, l2 = _trace_utils._grow_line(hess, ix, iy)
+  l2.reverse()
+  return  l2 + l1
