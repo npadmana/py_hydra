@@ -141,7 +141,7 @@ def grow_line(hess, ix, iy):
   return  l2 + l1
 
 
-def find_all_lines(hess):
+def find_all_lines(hess, verbose=True):
   # Define the line list
   ll = []
 
@@ -160,10 +160,12 @@ def find_all_lines(hess):
     # Get the line
     tmp = val.argmin()
     ix0, iy0 = ixx[tmp], iyy[tmp]
-    print 'Constructing line %i ......'%(count+1,)
-    print 'Initial position %i, %i, value = %f'%(ix0, iy0, val[tmp])
+    if verbose :
+      print 'Constructing line %i ......'%(count+1,)
+      print 'Initial position %i, %i, value = %f'%(ix0, iy0, val[tmp])
     out = grow_line(hess, ix0, iy0)
-    print 'Line length is %i'%len(out)
+    if verbose :
+      print 'Line length is %i'%len(out)
     count += 1
     ll.append(out)
 
@@ -176,8 +178,8 @@ def find_all_lines(hess):
       iyy = iyy[wgood]
       val = val[wgood]
 
-
-  print 'Done......'
-  print 'Found %i lines....'%count
+  if verbose :
+    print 'Done......'
+    print 'Found %i lines....'%count
 
   return ll
