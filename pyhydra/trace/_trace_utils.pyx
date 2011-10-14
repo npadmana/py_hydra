@@ -72,7 +72,7 @@ cdef double jacobi2x2(np.ndarray[np.float64_t, ndim=1] arr):
 
   # Refill the Hessian array
   arr[0] = emax
-  arr[1] = atan2(ny, nx)
+  arr[1] = fabs(atan2(ny, nx)) # Directions are degenerate -- so just use absolute value
   arr[2] = t*nx
   arr[3] = t*ny
   arr[4] = 0.0
@@ -178,12 +178,23 @@ cpdef _remove_coincident(np.ndarray[np.float64_t, ndim=3] hess, double eps):
 
 
 
+# Compute the difference in angle -- return a value between 0, pi/2
+# assumes that the two angles are positive and that they are between 0, pi
+cdef double _diff_angle(double a1, double a2):
+  cdef double pi = 1.5707963267948966
+  cdef double diff
+
+  diff = fabs(a1 - a2)
+  if diff > (pi/2) :
+    diff = pi - diff
+  return diff
+
 # This uses the default d + c\beta metric for choosing points
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)
 cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
-  cdef double x0, y0, dx, dy, beta, r
+  cdef double x0, y0, dx, dy, beta, r, alpha1, alpha2
   cdef int ix, iy, ii, jj
   cdef int imin, jmin
   
@@ -192,6 +203,7 @@ cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
   # Starting point
   ix = ix0
   iy = iy0
+  alpha1 = hess[ix,iy,1]
   x0 = ix0 + hess[ix, iy, 2]
   y0 = iy0 + hess[ix, iy, 3]
 
@@ -216,7 +228,8 @@ cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
           # Compute the distance
           dx = hess[ix+ii, iy+jj, 2] + ix + ii - x0
           dy = hess[ix+ii, iy+jj, 3] + iy + jj - y0
-          r = sqrt(dx*dx+dy*dy)
+          alpha2 = hess[ix+ii, iy+jj, 1]
+          r = sqrt(dx*dx+dy*dy) + _diff_angle(alpha1, alpha2)
 
           if (rmin is None) or (r < rmin):
             rmin = r
@@ -229,6 +242,7 @@ cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
     else :
       ix += imin
       iy += jmin
+      alpha1 = hess[ix, iy, 1]
       x0 = ix + hess[ix, iy, 2]
       y0 = iy + hess[ix, iy, 3]
       hess[ix, iy, 4] = -2
@@ -240,6 +254,7 @@ cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
   donext = True
   ix = ix0
   iy = iy0
+  alpha1 = hess[ix,iy,1]
   x0 = ix0 + hess[ix, iy, 2]
   y0 = iy0 + hess[ix, iy, 3]
   while donext :
@@ -256,7 +271,8 @@ cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
           # Compute the distance
           dx = hess[ix+ii, iy+jj, 2] + ix + ii - x0
           dy = hess[ix+ii, iy+jj, 3] + iy + jj - y0
-          r = sqrt(dx*dx+dy*dy)
+          alpha2 = hess[ix+ii, iy+jj, 1]
+          r = sqrt(dx*dx+dy*dy) + _diff_angle(alpha1, alpha2)
 
           if (rmin is None) or (r < rmin):
             rmin = r
@@ -269,6 +285,7 @@ cpdef _grow_line(np.ndarray[np.float64_t, ndim=3] hess, int ix0, int iy0):
     else :
       ix += imin
       iy += jmin
+      alpha1 = hess[ix,iy,1]
       x0 = ix + hess[ix, iy, 2]
       y0 = iy + hess[ix, iy, 3]
       hess[ix, iy, 4] = -2
