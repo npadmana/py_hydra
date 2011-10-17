@@ -1,10 +1,9 @@
 import pyhydra
-import cPickle
 
 datadir='../rawdata/jul2010/'
 
 cc = pyhydra.HydraRun('test', imfix=pyhydra.utils.transpImage) 
-
+#cc.load('test')
 
 # Read in biases 
 dt = dtype([('x', 'S21'), ('y', 'f8')])
@@ -32,11 +31,7 @@ flist = [datadir + ff['x'] for ff in flist1[ww]]
 cc.set_masterarc(flist, mintrace=20, maxtrace=60)
 
 
-
-ff = open('test.pickle','w')
-cPickle.dump(cc, ff)
-ff.close()
-
+cc.save('test')
 
 vv = cc.plot_traces()
 
