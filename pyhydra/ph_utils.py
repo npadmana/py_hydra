@@ -51,3 +51,35 @@ def median_combine(flist=None, arr=None, axis=-1, **kwargs):
 def transpImage(arr):
   return arr.T.copy()
 
+
+def boxcar_extract(tracelist, img, ivar=None, npix=2):
+  """ Simple boxcar extraction.
+
+  Use pixels [-npix, -npix+1, .., 0, .., npix-1, npix]
+
+  If ivar is set to None, artificially set ivar to 1 for all elements.
+  This is necessary, since the traces might skip a pixel due to roundoff error.
+  """
+  if ivar is None :
+    ivar = img*0.0 + 1.0
+
+  # Define the output arrays and ivars
+  nspec = len(tracelist)
+  nwave = img.shape[1]
+  out = np.zeros((nspec, nwave), dtype='f8')
+  outivar = np.zeros((nspec, nwave), dtype='f8')
+
+  # Loop over all the traces
+  for ispec in range(nspec):
+    t1 = tracelist[ispec]
+    pixarr = np.int32(np.round(t1[:, 1]))
+    icen = np.int32(np.round(t1[:,0]))
+    for ii in range(-npix, npix+1) :
+      out[ispec, pixarr] += img[icen + ii, pixarr]
+      outivar[ispec, pixarr] += ivar[icen + ii, pixarr]
+
+
+  return (out, outivar)
+
+
+
