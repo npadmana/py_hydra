@@ -19,7 +19,7 @@ class HydraRun :
     else :
       return self.imfix(arr)
 
-  def set_bias_flist(self, flist, **kwargs):
+  def set_bias(self, flist, **kwargs):
     self.bias = {}
     self.bias['flist'] = flist
     tmp = median_combine(flist=flist, **kwargs)
@@ -29,7 +29,7 @@ class HydraRun :
   def get_bias(self):
     return self.bias['arr']
 
-  def set_flat2d_flist(self, flist, **kwargs):
+  def set_flat2d(self, flist, **kwargs):
     self.flat2d = {}
     self.flat2d['flist'] = flist
     tmp = median_combine(flist=flist, **kwargs) 
@@ -84,6 +84,27 @@ class HydraRun :
       vv.mark(ii[:,1], ii[:,0], ii[:,0]*0.0 + size)
 
     return vv
+
+
+  def set_masterarc(self, flist, mintrace=0, maxtrace=None,  **kwargs):
+    """ Generate a master arc. We do this by simple median
+    selection.
+
+    mintrace : The minimum trace to consider
+    maxtrace : The maximum trace to consider
+    """
+    # generate the 2D median frame
+    self.masterarc = {}
+    self.masterarc['flist'] = flist
+    tmp = median_combine(flist=flist, **kwargs) 
+    tmp = self._imfix(tmp) - self.get_bias()
+
+    # Extract traces
+    out, ivar = boxcar_extract(self.tracelist, tmp)
+    self.masterarc['2d'] = out
+
+    # Now median these images.....
+    self.masterarc['spec'] = np.median(out[mintrace:maxtrace,:], axis=0)
 
 
   def __str__(self):
