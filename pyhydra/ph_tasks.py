@@ -1,8 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from ph_utils import *
 import trace.trace_utils as trace
 from __init__ import ds9
 import cPickle
+import gsl
+from linefind import *
 
 
 
@@ -14,23 +17,33 @@ class HydraRun :
     self.name = name
     self.imfix = imfix
     # Also define the savelist
-    self.savelist = ['bias', 'flat2d', 'tracelist', 'masterarc']
+    self.savelist = ['bias', 'flat2d', 'tracelist', 'masterarc', 'flat1d']
+    for ii in self.savelist :
+      exec('self.%s = None'%ii)
 
 
   def save(self, basename):
     for isave in self.savelist :
-      fn = "%s_%s.pickle"%(basename, isave)
-      ff = open(fn, "w")
-      exec("cPickle.dump(self.%s, ff)"%isave)
-      ff.close()
+      if eval('self.%s is not None'%isave):
+        print 'Saving %s.....'%isave
+        fn = "%s_%s.pickle"%(basename, isave)
+        ff = open(fn, "w")
+        exec("cPickle.dump(self.%s, ff)"%isave)
+        ff.close()
+      else :
+        print 'Ignoring %s....'%isave
 
 
   def load(self, basename):
     for isave in self.savelist :
       fn = "%s_%s.pickle"%(basename, isave)
-      ff = open(fn)
-      exec("self.%s = cPickle.load(ff)"%isave)
-      ff.close()
+      print 'Processing %s from %s......'%(isave, fn)
+      try :
+        ff = open(fn)
+        exec("self.%s = cPickle.load(ff)"%isave)
+        ff.close()
+      except :
+        print 'Unable to load %s....'%isave
 
 
   def _imfix(self, arr):
@@ -106,7 +119,42 @@ class HydraRun :
     return vv
 
 
-  def set_masterarc(self, flist, mintrace=0, maxtrace=None,  **kwargs):
+  
+  def trace_flat1d(self):
+    arr = self.get_flat2d()
+    out, ivar = boxcar_extract(self.tracelist, arr)
+    self.flat1d = {}
+    self.flat1d['arr'] = out
+    self.flat1d['ivar'] = ivar
+
+    # Also compute and store the median
+    ww = np.nonzero(ivar > 0.0)
+    self.flat1d['norm'] = np.median(out[ww])
+
+
+  def generate_smooth_flat(self, itrace, nk=4, nbreak=10):
+    # Check basic info
+    ntrace, nwave = self.flat1d['arr'].shape
+    if itrace >= ntrace :
+      raise ValueError, 'No such trace available'
+
+    # Extract the data
+    xx = np.nonzero(self.flat1d['ivar'][itrace,:] > 0.0)[0]
+    yy = self.flat1d['arr'][itrace, xx]/self.flat1d['norm']
+    xev = np.arange(nwave)
+
+    # Fit a B-spline
+    yev = gsl.BSplineUniformInterpolate(xx, yy, xev, xr=[-1.e-4, nwave+1.e-4], nk=nk, nbreak=nbreak)
+    return yev
+
+
+  def flatten_all(self, arr, **kwargs):
+    ntrace = arr.shape[0]
+    for ii in range(ntrace):
+      yev = self.generate_smooth_flat(ii, **kwargs)
+      arr[ii, :] /= yev
+
+  def set_masterarc(self, flist, mintrace=0, maxtrace=None,  nbreak=20, **kwargs):
     """ Generate a master arc. We do this by simple median
     selection.
 
@@ -121,11 +169,26 @@ class HydraRun :
 
     # Extract traces
     out, ivar = boxcar_extract(self.tracelist, tmp)
+    self.flatten_all(out, nbreak=nbreak)
     self.masterarc['2d'] = out
 
     # Now median these images.....
     self.masterarc['spec'] = np.median(out[mintrace:maxtrace,:], axis=0)
 
+
+  def find_masterarc_lines(self, sigma=3.0, lo=-200.0, eps=0.01):
+    xpos, rval = crude_find_lines(self.masterarc['spec'], sigma=sigma, eps=eps, lo=lo)
+    self.masterarc['lines_xpos'] = xpos
+    self.masterarc['lines_rval'] = rval
+    print '%i lines found.....'%len(xpos)
+
+  def plot_masterarc_lines(self):
+    plt.clf()
+    yy = self.masterarc['spec']
+    yymax = yy.max()
+    plt.plot(yy, 'b-')
+    for xx in self.masterarc['lines_xpos'] :
+      plt.plot([xx,xx],[0,yymax], 'r--')
 
   def __str__(self):
     return 'HydraRun : %s'%self.name
