@@ -3,7 +3,7 @@ import pyhydra
 datadir='../rawdata/jul2010/'
 
 cc = pyhydra.HydraRun('test', imfix=pyhydra.utils.transpImage) 
-#cc.load('test')
+cc.load('test')
 
 # Read in biases 
 dt = dtype([('x', 'S21'), ('y', 'f8')])
@@ -23,15 +23,18 @@ cc.set_flat2d(flist)
 # The defaults have been tuned for this
 cc.generate_traces()
 
+# Trace out the flats
+cc.trace_flat1d()
+
 
 # Load in the arc solutions
 flist1 = loadtxt(datadir+'allarc.plan', dtype=dt)
 ww = flist1['y'] == 20.0
 flist = [datadir + ff['x'] for ff in flist1[ww]]
 cc.set_masterarc(flist, mintrace=20, maxtrace=60)
+cc.find_masterarc_lines()
 
-
-cc.save('test')
+cc.save('test1')
 
 vv = cc.plot_traces()
 
