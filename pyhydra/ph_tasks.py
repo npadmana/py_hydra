@@ -2,6 +2,7 @@ import numpy as np
 from ph_utils import *
 import trace.trace_utils as trace
 from __init__ import ds9
+import cPickle
 
 
 
@@ -12,6 +13,25 @@ class HydraRun :
   def __init__(self, name, imfix=None):
     self.name = name
     self.imfix = imfix
+    # Also define the savelist
+    self.savelist = ['bias', 'flat2d', 'tracelist', 'masterarc']
+
+
+  def save(self, basename):
+    for isave in self.savelist :
+      fn = "%s_%s.pickle"%(basename, isave)
+      ff = open(fn, "w")
+      exec("cPickle.dump(self.%s, ff)"%isave)
+      ff.close()
+
+
+  def load(self, basename):
+    for isave in self.savelist :
+      fn = "%s_%s.pickle"%(basename, isave)
+      ff = open(fn)
+      exec("self.%s = cPickle.load(ff)"%isave)
+      ff.close()
+
 
   def _imfix(self, arr):
     if self.imfix is None :
