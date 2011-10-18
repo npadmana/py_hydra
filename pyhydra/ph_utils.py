@@ -83,3 +83,16 @@ def boxcar_extract(tracelist, img, ivar=None, npix=2):
 
 
 
+def mk_ivar(img, readnoise=0.0, gain=1.0):
+  """ Generate a Poisson noise image.
+
+  """
+  # Generate the variance
+  var = img*gain + readnoise**2
+
+  # Invert, avoiding divide by zero
+  wwvar = var > 0.0
+  ivar = 0.0*var
+  ivar[wwvar] = 1./var[wwvar]
+
+  return ivar
