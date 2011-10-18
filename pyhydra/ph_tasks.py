@@ -6,6 +6,7 @@ from __init__ import ds9
 import cPickle
 import gsl
 from linefind import *
+import wavesol
 
 
 
@@ -176,19 +177,57 @@ class HydraRun :
     self.masterarc['spec'] = np.median(out[mintrace:maxtrace,:], axis=0)
 
 
-  def find_masterarc_lines(self, sigma=3.0, lo=-200.0, eps=0.01):
+  def find_masterarc_lines(self, sigma=3.0, lo=-50.0, eps=0.01):
     xpos, rval = crude_find_lines(self.masterarc['spec'], sigma=sigma, eps=eps, lo=lo)
     self.masterarc['lines_xpos'] = xpos
     self.masterarc['lines_rval'] = rval
     print '%i lines found.....'%len(xpos)
 
-  def plot_masterarc_lines(self):
+  def plot_masterarc_lines(self, rcut=None):
     plt.clf()
     yy = self.masterarc['spec']
     yymax = yy.max()
     plt.plot(yy, 'b-')
-    for xx in self.masterarc['lines_xpos'] :
+    if rcut is None :
+      xpos = self.masterarc['lines_xpos']
+    else :
+      ww = nonzero(self.masterarc['lines_rval'] < rcut)
+      xpos = self.masterarc['lines_xpos'][ww]
+    for xx in xpos :
       plt.plot([xx,xx],[0,yymax], 'r--')
+
+  
+  def get_wavesol(self, knownlines, rcut, startwave, endwave, niter=None, nk=4, nbreak=10):
+    self.wavesol = {}
+    self.wavesol['knownlines'] = knownlines
+    if niter is None :
+      niter = [5]
+
+    # Set up
+    npix = len(self.masterarc['spec'])
+    wgood = np.nonzero(self.masterarc['lines_rval'] < rcut)
+
+    # Build class
+    cc = wavesol.WaveSol(self.masterarc['lines_xpos'], knownlines, npix, wgood=wgood)
+    cc.linear_fit(startwave, endwave)
+    tmp = cc.polish(niter=niter, nk=nk, nbreak=nbreak)
+
+    self.wavesol['lines'] = tmp[2]
+    self.wavesol['waves'] = tmp[3]
+    self.wavesol['predict'] = tmp[4]
+    self.wavesol['xev'] = tmp[0]
+    self.wavesol['yev'] = tmp[1]
+
+
+
+  def plot_wavesol(self, resid=True):
+    if resid :
+      plt.plot(self.wavesol['lines'], self.wavesol['waves']-self.wavesol['predict'], 'ro')
+    else :
+      plt.plot(self.wavesol['lines'], self.wavesol['waves'], 'ro')
+      plt.plot(self.wavesol['xev'], self.wavesol['yev'], 'b-')
+
+
 
   def __str__(self):
     return 'HydraRun : %s'%self.name
