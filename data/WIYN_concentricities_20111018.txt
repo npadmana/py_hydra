@@ -1,0 +1,391 @@
+##  edited 08/09/2011  imperically determined concentricities for FOPS 24 and 240, verified on sky
+##  edited 08/09/2011  reinstated fiber 0 39  Charles Corson
+##  edited 12/17/2009  remove fiber 226, spinning head
+##  edited 10/17/2005  remove fiber 239, broken
+##  edited 04/17/2005  remove fiber 19, bent.
+##  edited 01/24/05  remove 14, 83  bent
+##  edited 01/21/05 remove 182, 185, 262  bent
+##  edited 01/13/05 remove 68, bent
+##  edited Oct 25/04 remove 283********************
+##  edited 03/02/04 remove 250
+##  edited 11/2003 remove 167
+##  edited 11/2003 remove FOP 0
+##  Last edited 2/2002 remove 256, 259, 263, 265, 271, 277, 264
+##  Last edited 3/2002 remove 257, 260, 269
+## re-activated 175, 178, 50, 46, and 208   12/2002 
+##  Last Edit 11/99 
+##      Concentricities file Version 6.1	6/1/98 
+##  v6.1 Fiber 53 removed from service - SCB 6/1/98
+## -----------------------------------------------
+#        Fiber 242 removed from service -CC 11/99
+#   v6.1 Fiber 53 removed from service - SCB 6/1/98
+#   v6.0 Remeasured after installation of pivot fixtures - SCB 4/1/96
+#   v5.2 Includes photometry fibers - SCB 3/4/96
+#   v5.1 After tightening gripper and quick pivot fix - SCB 1/26/96
+#   v4.1 Corrected gap position in blue cable from slit 74 to slit 75
+#   v4	Modified Red cable concentricities from positioning tests - SCB 12/29/95
+#   v3	Modified Blue slit positions to same scheme as Red cable - SCB 11/9/95
+#
+#	Lines beginning with '#' are comments
+#       Line  beginning with '##' are comments printed at run time
+#
+#
+#
+#  CABLE DEFINITIONS CABLE DEFINITIONS CABLE DEFINITIONS CABLE DEFINITIONS 
+#
+#  Format -- Cable definations 
+#
+#         (field)      (description)
+#
+#           CABLE    =  Cable idenifier
+#                       (once character, upper case)
+#
+#           LABELS   =  Cable labels
+#			A character, either 'A' or 'N'. Affects references
+#			to slit position inquiries.  
+#			'A' means that fibers are identified with alpha
+#			characters A-Z  (limit of 26 fibers in a cable)
+#			'N' means that integers are used to reference
+#			them.  (alpha, no space).  For Alpha references,
+#			a slit position of 1 maps to 'A', 2 maps to 'B', etc.
+#
+#           NAME     =  Cable name
+#                       (alpha, no space, case insensitive)
+#
+#           DESCR    =  Description, not used by code
+#                       (alpha, spaces are ok)
+#
+#	NOTE: A cable doesn't exist if it's not listed below!
+#
+#CABLE  LABELS  SELECT? NAME    DESCR
+
+F       A       N       FOPS    Field orientation Probes
+R       N       Y       RED     Red cable
+B       N       Y       BLUE    Blue cable
+P       N       Y       PHOT    Photometry cable
+S       N       N       SPARE	Spare cable
+Z       N       N       NULL    Nonexistant cable (missing fibers should belong to this)
+
+#  FIBER DEFINITIONS FIBER DEFINITIONS FIBER DEFINITIONS FIBER DEFINITIONS 
+#
+#
+#  Format -- fiber entries
+#
+#         (field)      (description)
+#
+#           FIB    =  fiber # on plate
+#                     (integer, zero indexed )
+#
+#           SLIT   =  slit position 
+#                     (positive integer)
+#
+#           C      =  cable membership
+#                     (single character)
+#                     (see cable definitions above)
+#
+#           F      =  special flags
+#                     (single character)
+#
+#                     A = Active fiber 
+#                     B = Broken fiber 
+#                     L = Locked fiber 
+#                     Z = Nonexistant Fiber
+#
+#           R      =  Concentricity offset 
+#                     (floating point)
+#                     (encoder units)
+#
+#           THETA  =  Concentricity angle 
+#                     (floating point)
+#                     (radians)
+#
+#FIB    SLIT    C       F       R       THETA
+
+  0         0   F  A    11.9  2.3377
+  1        66   R  A    16.2  0.5254
+  2        53   B  A     9.5  0.2179
+  3         0   Z  Z     0.0  0.0000
+  4        32   R  A     9.8  0.8762
+  5        47   B  A    18.8 -0.6238
+  6         1   Z  Z     0.0  0.0000
+  7        10   R  A    26.0  0.6500
+  8        51   B  A     3.9  2.6144
+  9         3   Z  Z     0.0  0.0000
+ 10        40   R  A    14.2  0.6179
+ 11        82   B  A    18.4  2.5060
+ 12         2   Z  Z   125.0 -0.9599
+ 13        65   R  A     6.8  0.8724
+ 14        22   B  B    18.2  2.4233
+ 15         4   Z  Z     0.0  0.0000
+ 16         5   R  A    16.7  0.3162
+ 17        72   B  A     7.4 -0.1092
+ 18         0   Z  Z     0.0  0.0000
+ 19        19   R  B     8.7  1.4288
+ 20        19   B  A    21.6  0.2532
+ 21         0   Z  Z     0.0  0.0000
+ 22        64   R  A    21.9  0.8620
+ 23        83   B  A    14.1  0.0083
+ 24         1   F  A     110  0.349
+ 25        42   R  A     3.2 -1.4093
+ 26        56   B  A    19.0  2.1208
+ 27         0   Z  Z     0.0  0.0000
+ 28        88   R  A    12.6  1.1496
+ 29        67   B  A    11.4  0.1227
+ 30         0   Z  Z     0.0  0.0000
+ 31        63   R  A    12.8  1.3323
+ 32        39   B  A    12.7  2.2235
+ 33         0   Z  Z     0.0  0.0000
+ 34        13   R  A     9.4  0.3441
+ 35        41   B  A    14.7  0.1833
+ 36         0   Z  Z     0.0  0.0000
+ 37        26   R  A     6.8  1.7138
+ 38        94   B  A     6.0  2.1716
+ 39         0   Z  A     0.0  0.0000
+ 40       100   R  A    20.9  1.0019
+ 41        71   B  A    20.9  0.0840
+ 42         0   Z  Z     0.0  0.0000
+ 43        43   R  A    24.2  0.4564
+ 44         5   B  A    13.3  0.9152
+ 45         0   Z  Z     0.0  0.0000
+ 46        99   R  A    16.2  2.5390
+ 47        93   B  A    31.6  2.7060
+ 48         2   F  A    10.3  0.8741
+ 49        76   R  A     6.2 -2.0343
+ 50        84   B  B    17.6 -2.4961
+ 51         0   Z  Z     0.0  0.0000
+ 52        38   R  A    11.7 -1.7597
+ 53        98   B  B     8.2 -1.8644
+ 54         0   Z  Z     0.0  0.0000
+ 55        52   R  A    12.1 -1.2720
+ 56        64   B  B    25.7 -1.7220
+ 57         0   Z  Z     0.0  0.0000
+ 58        67   R  A    19.5  0.2092
+ 59        27   B  A    16.7  2.5866
+ 60         0   Z  Z     0.0  0.0000
+ 61         2   R  A    15.1  0.0260
+ 62        42   B  A    11.7  2.0532
+ 63         0   Z  Z     0.0  0.0000
+ 64        90   R  A     4.0  1.0947
+ 65        70   B  A    17.0  1.3901
+ 66         0   Z  Z     0.0  0.0000
+ 67        59   R  A    12.7  0.6505
+ 68        65   B  B    17.5  2.9135
+ 69         0   Z  Z     0.0  0.0000
+ 70        14   R  A     7.6  1.5169
+ 71        90   B  A    27.6 -0.8345
+ 72         3   F  A    12.7 -1.5561
+ 73        61   R  A    16.4  1.9834
+ 74        50   B  A    12.6  0.6138
+ 75         0   Z  Z     0.0  0.0000
+ 76        82   R  A    13.6  1.9683
+ 77        11   B  A    13.3  2.0374
+ 78         0   Z  Z     0.0  0.0000
+ 79        47   R  A    14.5  0.5989
+ 80        25   B  A     5.6 -1.7983
+ 81         0   Z  Z     0.0  0.0000
+ 82        91   R  A    12.1  1.5463
+ 83        97   B  B    38.7  2.8731
+ 84         0   Z  Z     0.0  0.0000
+ 85        45   R  B     0.0  0.0000
+ 86         4   B  A    15.8 -2.4023
+ 87         0   Z  Z     0.0  0.0000
+ 88        28   R  A     6.6 -2.2756
+ 89        63   B  A    13.5  2.7807
+ 90         0   Z  Z     0.0  0.0000
+ 91        41   R  A     6.8  1.6592
+ 92        46   B  A     6.5 -0.3591
+ 93         0   Z  Z     0.0  0.0000
+ 94        98   R  A    32.4  1.5338
+ 95        79   B  A    17.9 -0.2639
+ 96         4   F  A    12.5 -1.7491
+ 97        73   R  A     3.6  2.6363
+ 98        80   B  A    21.2 -0.6020
+ 99         0   Z  Z     0.0  0.0000
+100        16   R  A    14.1 -2.8526
+101        89   B  A    14.2 -0.2079
+102         0   Z  Z     0.0  0.0000
+103        12   R  A     8.8  3.0482
+104        66   B  A    17.8  3.0635
+105         0   Z  Z     0.0  0.0000
+106        18   R  A    11.3 -3.0672
+107        38   B  A    30.0  1.1689
+108         0   Z  Z     0.0  0.0000
+109        51   R  A     8.9  0.7471
+110        45   B  A    27.4 -0.8783
+111         0   Z  Z     0.0  0.0000
+112        57   R  A     3.5 -0.7700
+113        85   B  A    17.4  2.5056
+114         0   Z  Z     0.0  0.0000
+115        97   R  A     0.0  0.0000
+116        62   B  A    20.3 -2.4835
+117         0   Z  Z     0.0  0.0000
+118        11   R  A    14.3  2.3933
+119        43   B  A    25.5  2.5407
+120         5   F  A    32.5  2.4991
+121        49   R  A     2.5 -1.1638
+122        23   B  A    20.7 -3.0791
+123         0   Z  Z     0.0  0.0000
+124        20   R  A     8.1 -0.4497
+125        15   B  A    19.1 -1.8643
+126         0   Z  Z     0.0  0.0000
+127        37   R  A     7.5  0.4687
+128        26   B  A    14.8 -2.5780
+129         0   Z  Z     0.0  0.0000
+130        71   R  A    10.8 -2.6373
+131        77   B  A    23.2 -2.9747
+132         0   Z  Z     0.0  0.0000
+133        35   R  A     5.8  0.2400
+134        24   B  A    30.8  2.7103
+135         0   Z  Z     0.0  0.0000
+136        70   R  A    13.9  2.7872
+137        30   B  A    25.6  2.9114
+138         0   Z  Z     0.0  0.0000
+139        31   R  A     9.6  2.8029
+140        60   B  A    21.6 -0.9458
+141         0   Z  Z     0.0  0.0000
+142         4   R  A     7.4 -2.3764
+143        99   B  A     1.6  2.1888
+144         6   F  A    10.0 -1.6150
+145        36   R  A     5.9  1.9973
+146        96   B  A    17.4 -0.2476
+147         0   Z  Z     0.0  0.0000
+148        77   R  A    11.6  0.9153
+149        31   B  A    14.1  0.0435
+150         0   Z  Z     0.0  0.0000
+151        80   R  A     7.8  0.8326
+152        81   B  A    22.2 -0.7204
+153         0   Z  Z     0.0  0.0000
+154        53   R  A     4.3  0.2007
+155         7   B  A    22.9 -0.6489
+156         0   Z  Z     0.0  0.0000
+157        96   R  A     3.7  1.5000
+158        54   B  A    15.0 -2.8715
+159         0   Z  Z     0.0  0.0000
+160         8   R  A     8.0 -0.2099
+161        52   B  A     0.2  0.4460
+162         0   Z  Z     0.0  0.0000
+163        24   R  A    13.9  1.6457
+164        14   B  A    18.0  2.5296
+165         0   Z  Z     0.0  0.0000
+166        34   R  A     2.5 -2.9928
+167        18   B  B    13.5  0.5985
+168         7   F  A    20.1 -2.3025
+169        54   R  A    23.7 -2.7965
+170        17   B  A    12.0  2.5397
+171         0   Z  Z     0.0  0.0000
+172        33   R  A    18.2 -1.2652
+173        55   B  A    34.4 -3.0455
+174         0   Z  Z     0.0  0.0000
+175         7   R  A     0.5 -2.9622
+176        73   B  A    23.6 -3.0662
+177         0   Z  Z     0.0  0.0000
+178        92   R  B    37.3 -2.6933
+179         3   B  A    22.5  2.9735
+180         0   Z  Z     0.0  0.0000
+181         9   R  A    17.4  2.1045
+182        13   B  B     8.7 -1.7698
+183         0   Z  Z     0.0  0.0000
+184        50   R  A     8.2  2.4452
+185        48   B  B    26.0 -1.9060
+186         0   Z  Z     0.0  0.0000
+187        83   R  A    11.5  1.5876
+188        88   B  A    39.3  2.5832
+189         0   Z  Z     0.0  0.0000
+190        56   R  A    11.3 -2.1450
+191        87   B  A    24.8  2.9962
+192         8   F  A    15.8  2.4258
+193        87   R  A     2.6 -1.6070
+194        16   B  A     7.2 -1.8185
+195         0   Z  Z     0.0  0.0000
+196         6   R  A     5.5 -2.7508
+197        69   B  A    16.2 -2.1880
+198         0   Z  Z     0.0  0.0000
+199        25   R  A    15.7  3.0347
+200        95   B  A     2.4 -1.1065
+201         0   Z  Z     0.0  0.0000
+202        86   R  A    42.3  1.8389
+203        78   B  A    22.8  3.1414
+204         0   Z  Z     0.0  0.0000
+205         3   R  A    26.1  1.6268
+206         9   B  A    15.4 -2.5884
+207         0   Z  Z     0.0  0.0000
+208        27   R  A    45.3 -3.0633
+209        74   B  A    14.6  2.7472
+210         0   Z  Z     0.0  0.0000
+211        89   R  B    42.6 -2.9077
+212        20   B  A     9.4 -1.8027
+213         0   Z  Z     0.0  0.0000
+214        78   R  A    13.0 -2.8340
+215        33   B  A    26.7  3.1077
+216         9   F  A    13.8 -2.5929
+217        69   R  A    26.2 -2.2306
+218        35   B  A    23.5  2.4786
+219         0   S  L     0.0  0.0000
+220        23   R  A     7.0 -2.2339
+221        36   B  A    19.9  2.9468
+222         0   Z  Z     0.0  0.0000
+223        79   R  A    24.7 -2.9860
+224        29   B  A    16.2  2.5986
+225         0   Z  Z     0.0  0.0000
+226        93   R  B    20.2 -2.8277
+227        57   B  A    19.8  2.6658
+228         0   Z  Z     0.0  0.0000
+229        15   R  A    10.3  2.8475
+230        21   B  A    13.8 -3.3454
+231         0   Z  Z     0.0  0.0000
+232        74   R  A    23.5  1.7734
+233        76   B  A    36.7  2.4470
+234         0   Z  Z     0.0  0.0000
+235        44   R  A    14.9  1.3920
+236        32   B  A    14.2 -2.6368
+237         0   Z  Z     0.0  0.0000
+238        84   R  A     7.1  2.4683
+239        86   B  B    14.9 -2.0434
+240        10   F  A    19.0  2.269
+241        21   R  A    27.0  1.9130
+242        59   B  B    18.3  1.0765
+243         0   Z  Z     0.0  0.0000
+244        94   R  A    22.1  2.9710
+245        61   B  A    19.2  2.4733
+246         0   Z  Z     0.0  0.0000
+247        17   R  A    23.5  0.5263
+248        49   B  A     7.5  2.1391
+249         0   Z  Z     0.0  0.0000
+250        75   R  B    25.3 -3.3089
+251        28   B  A     6.5 -0.2708
+252         0   Z  Z     0.0  0.0000
+253        62   R  A    33.2  2.9608
+254        92   B  A    12.8 -2.9581
+255         0   Z  Z     0.0  0.0000
+256        95   R  B    19.4 -1.8786
+257         8   B  B    31.3 -2.9894
+258         0   Z  Z     0.0  0.0000
+259        22   R  B    17.9 -1.8505
+260        34   B  B    14.0 -2.1662
+261         0   Z  Z     0.0  0.0000
+262        48   R  B    26.9 -2.9251
+263        40   B  B    21.7 -3.0920
+264        11   F  B    16.2 -2.5770
+265        60   R  B    29.0 -3.3924
+266         6   B  A    26.2 -2.4890
+267         0   Z  Z     0.0  0.0000
+268        29   R  A    36.0  1.0823
+269        12   B  B    31.3  3.1035
+270         0   Z  Z     0.0  0.0000
+271        55   R  B    69.0 -3.0529
+272        44   B  A    13.4 -2.6677
+273         0   Z  Z     0.0  0.0000
+274        72   R  A    31.8  0.4319
+275        10   B  A    18.3 -0.9180
+276        58   R  A    16.9 -3.0180
+277        30   R  B     0.0  0.0000
+278         2   B  A    36.5 -3.9719
+279        85   R  A    40.8  5.7700
+280        81   R  A     3.8  1.7263
+281        68   B  A    15.8 -4.1204
+282         0   Z  Z     0.0  0.0000
+283        46   R  B    29.7 -2.9573
+284        37   B  A    20.1  0.5879
+285         0   Z  Z     0.0  0.0000
+286        39   R  A    20.1  1.0305
+287        91   B  A    35.7 -3.4626
