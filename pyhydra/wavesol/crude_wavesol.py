@@ -5,7 +5,7 @@ import gsl
 
 
 class WaveSol :
-  def __init__(self, arclines, knownlines, npix, wgood=None):
+  def __init__(self, arclines, knownlines, npix, wgood=None, sigrej=5.0):
     """ arclines : detected arclines in pixels
     knownlines : expected lines, in wavelength
     """
@@ -13,6 +13,7 @@ class WaveSol :
     self.knownlines = knownlines
     self.wgood = wgood
     self.npix = npix
+    self.sigrej = sigrej
 
   def merit(self, arcwave):
     """ Compute the merit function.
@@ -26,9 +27,13 @@ class WaveSol :
     USE FOR LARGE NUMBERS OF LINES. It should be fine for ~100 lines though.
     """
     diff = np.subtract.outer(arcwave, self.knownlines)
-    diff = diff**2
+    diff = np.absolute(diff)
     tmp = diff.min(axis=1)
-    return tmp.sum()
+
+    mad = np.median(tmp)
+
+    # Return the sum
+    return tmp[tmp < self.sigrej*mad].sum()
 
 
   def objective(self, pp, grad):
@@ -42,7 +47,7 @@ class WaveSol :
     retval = self.merit(wave)
     return retval
 
-  def fit_linear(self, startwave, endwave, frel=1.e-10, fabs=1.e-12):
+  def fit_linear_grid(self, startvec, delta,  frel=1.e-10, fabs=1.e-12):
     # Set up the optimizer
     opt = nlopt.opt(nlopt.GN_DIRECT, 2)
     opt.set_min_objective(self.objective)
@@ -54,15 +59,46 @@ class WaveSol :
     opt.set_ftol_abs(fabs)
 
     # Set bounds
-    slope = (endwave - startwave)/np.double(self.npix)
     tmp = np.zeros((2,2), dtype='f8')
-    tmp[:,0] = [slope*0.5, startwave*0.5]
-    tmp[:,1] = [slope*1.5, startwave*1.5]
+    tmp[:,0] = np.array(startvec) + np.array(delta)
+    tmp[:,1] = np.array(startvec) - np.array(delta)
     opt.set_lower_bounds(tmp.min(axis=1))
     opt.set_upper_bounds(tmp.max(axis=1))
 
-    startvec = [slope, startwave]
-    self.linear = opt.optimize(startvec)
+    val = opt.optimize(startvec)
+    return (opt.last_optimum_value(), val)
+
+  def fit_linear(self, startwave, disp, guess_quality=0.5, dispstep=0.01, wavestep=0.01,verbose=True):
+    """ Do a brute force search over a wide list.
+
+    This function is horrendous when it comes to local minima, 
+    luckily, the space is rather simple.
+
+    Improving your guess quality will significantly speed up this routine.
+    """
+    best_minimum = None 
+    best_minimum_value = None
+
+    # Define bounds, and start
+    delta = [disp*dispstep, startwave*wavestep]
+
+    # Do the grid
+    for islope in np.arange(guess_quality, 2.0-guess_quality, dispstep):
+      for istart in np.arange(guess_quality, 2.0-guess_quality, wavestep):
+
+        # Set the start and do the optimize
+        startvec = [islope*disp, startwave*istart]
+        retval, bestfit = self.fit_linear_grid(startvec, delta)
+
+        # How well am I doing
+        if (best_minimum_value is None) or (best_minimum_value > retval) :
+          best_minimum_value = retval
+          best_minimum = bestfit
+      if verbose :
+        print startvec[0], best_minimum, best_minimum_value 
+
+    self.linear = best_minimum
+    return best_minimum_value
 
 
   def idarc(self, pp):
