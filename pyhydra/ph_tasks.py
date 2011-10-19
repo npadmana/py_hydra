@@ -191,13 +191,14 @@ class HydraRun :
     if rcut is None :
       xpos = self.masterarc['lines_xpos']
     else :
-      ww = nonzero(self.masterarc['lines_rval'] < rcut)
+      ww = np.nonzero(self.masterarc['lines_rval'] < rcut)
       xpos = self.masterarc['lines_xpos'][ww]
     for xx in xpos :
       plt.plot([xx,xx],[0,yymax], 'r--')
 
   
-  def get_wavesol(self, knownlines, rcut, startwave, endwave, niter=None, nk=4, nbreak=10):
+  def get_wavesol(self, knownlines, rcut, startwave, disp, guess_quality=0.9, 
+                 sigrej=5.0, niter=None, nk=4, nbreak=10):
     self.wavesol = {}
     self.wavesol['knownlines'] = knownlines
     if niter is None :
@@ -208,9 +209,10 @@ class HydraRun :
     wgood = np.nonzero(self.masterarc['lines_rval'] < rcut)
 
     # Build class
-    cc = wavesol.WaveSol(self.masterarc['lines_xpos'], knownlines, npix, wgood=wgood)
-    cc.linear_fit(startwave, endwave)
+    cc = wavesol.WaveSol(self.masterarc['lines_xpos'], knownlines, npix, wgood=wgood, sigrej=sigrej)
+    cc.fit_linear(startwave, disp, guess_quality=guess_quality, wavestep=0.01, dispstep=0.01)
     print 'The linear first guess fit is ', cc.linear
+    print 'The merit function is ', cc.objective(cc.linear, [])
     tmp = cc.polish(niter=niter, nk=nk, nbreak=nbreak)
 
     self.wavesol['lines'] = tmp[2]
