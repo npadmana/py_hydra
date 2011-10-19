@@ -47,7 +47,7 @@ class WaveSol :
     retval = self.merit(wave)
     return retval
 
-  def fit_linear_grid(self, startvec, delta,  frel=1.e-10, fabs=1.e-12):
+  def fit_linear_grid(self, startvec, delta,  frel=1.e-6, fabs=1.e-8):
     # Set up the optimizer
     opt = nlopt.opt(nlopt.GN_DIRECT, 2)
     opt.set_min_objective(self.objective)
