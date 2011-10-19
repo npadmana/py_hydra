@@ -6,6 +6,7 @@ Sep 2011
 
 import numpy as np
 import pyfits
+import os.path
 
 def load_multiple_fits(flist, hdunum=0, verbose=False, **kwargs):
   """ Read in all the FITS files specified in flist, 
@@ -96,3 +97,37 @@ def mk_ivar(img, readnoise=0.0, gain=1.0):
   ivar[wwvar] = 1./var[wwvar]
 
   return ivar
+
+
+
+def arclines(lamptype, minwave, maxwave):
+  """ Return a list of lines.
+
+  lamptype :
+     ThAr : Thorium-Argon
+     HeNeAr : Helium Neon Argon
+     CuAr   : Copper-Argon
+
+  These files are in PYHYDRA_DIR/data/
+
+  minwave, maxwave : min, max wavelength
+  """
+  fndict = {}
+  fndict['HeNeAr'] = 'henearhres.dat'
+  fndict['CuAr'] = 'cuar.dat'
+  fndict['ThAr'] = 'thar.dat'
+
+  try :
+    fn = os.path.join(os.path.expandvars("$PYHYDRA_DIR/data"), fndict[lamptype])
+  except KeyError :
+    raise KeyError, 'Unknown lamptype.'
+
+
+  arr = np.loadtxt(fn, usecols=[0])
+  ww = np.nonzero((arr >= minwave) & (arr <= maxwave))
+
+  return arr[ww]
+
+
+
+
