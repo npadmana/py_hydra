@@ -18,7 +18,7 @@ class HydraRun :
     self.name = name
     self.imfix = imfix
     # Also define the savelist
-    self.savelist = ['bias', 'flat2d', 'tracelist', 'masterarc', 'flat1d']
+    self.savelist = ['bias', 'flat2d', 'tracelist', 'masterarc', 'flat1d', 'wavesol']
     for ii in self.savelist :
       exec('self.%s = None'%ii)
 
@@ -210,6 +210,7 @@ class HydraRun :
     # Build class
     cc = wavesol.WaveSol(self.masterarc['lines_xpos'], knownlines, npix, wgood=wgood)
     cc.linear_fit(startwave, endwave)
+    print 'The linear first guess fit is ', cc.linear
     tmp = cc.polish(niter=niter, nk=nk, nbreak=nbreak)
 
     self.wavesol['lines'] = tmp[2]
