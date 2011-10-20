@@ -15,22 +15,8 @@ Nikhil Padmanabhan, Yale, 2011
 
 import numpy as np
 import _trace_utils 
-
-def _gauss(x,y, sigma):
-  norm = 1./(2.0*np.pi*sigma**2)
-  eterm = (x**2 + y**2)/(2.0*sigma**2)
-  eterm = np.clip(eterm, 0.0, 20.0)
-  return norm * np.exp(-eterm)
-
-def _gauss_x(x,y, sigma):
-  tmp = _gauss(x,y,sigma)
-  return -x * tmp/sigma**2
-
-
-def _gauss_y(x,y,sigma):
-  tmp = _gauss(x,y,sigma)
-  return -y * tmp/sigma**2
-
+from time import time
+from _trace_utils import _gauss, _gauss_x, _gauss_y
 
 def _generate_gaussian_kernel(x, y, sigma, select):
   """ select is one of :
@@ -53,7 +39,7 @@ def _generate_gaussian_kernel(x, y, sigma, select):
     raise RuntimeError, 'Unknown selection'
 
 
-def generate_hessian(A, sigma, verbose=False):
+def generate_hessian(A, sigma, verbose=False, pad=100):
   """Generate the Hessian matrix
   This returns a [Nx+2, Ny+2, 6] array with the following
   elements
@@ -71,31 +57,39 @@ def generate_hessian(A, sigma, verbose=False):
   """
   # Get the dimensions of the array
   nx, ny = A.shape
+  nx1 = nx + pad
+  ny1 = ny + pad
 
   # Allocate the output
   hess = np.zeros((nx+2, ny+2, 6), dtype='f8')
 
 
   # Zero pad A
-  A1 = np.zeros((2*nx, 2*ny),dtype='f8')
+  A1 = np.zeros((nx1, ny1),dtype='f8')
   A1[0:nx, 0:ny] = A[:,:]
   # FFT
   A1fft = np.fft.rfft2(A1)
 
   # Define coordinates
-  xc = np.fft.fftfreq(2*nx, 1./(2.0*nx))
-  yc = np.fft.fftfreq(2*ny, 1./(2.0*ny))
-  # Note swapped version of x and y
-  ycoord, xcoord = np.meshgrid(yc, xc)
+  xc = np.fft.fftfreq(nx1, 1./(nx1))
+  yc = np.fft.fftfreq(ny1, 1./(ny1))
+
+  if verbose :
+    print 'Starting derivative loop'
 
   # Derivs 
   derivlist = ['x','y','xx', 'yy','xy','yx']
   for ii, select1 in np.ndenumerate(derivlist):
-    kernel = _generate_gaussian_kernel(xcoord, ycoord, sigma, select1)
+    t1 = time()
+    kernel = _generate_gaussian_kernel(xc, yc, sigma, select1)
+    if verbose :
+      print 'Time to generate kernel :', time()-t1
+    t1 = time()
     kft = np.fft.rfft2(kernel)
     val = np.fft.irfft2(A1fft*kft)
     hess[1:nx+1, 1:ny+1, ii[0]] = val[0:nx,0:ny] # Remove padding
     if verbose :
+      print 'Time for convolution :', time()-t1
       print 'Completed %s'%select1
 
   # return output 

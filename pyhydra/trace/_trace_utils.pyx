@@ -22,6 +22,95 @@ cdef extern from "math.h" :
   double cos(double)
   double fabs(double)
   double sqrt(double)
+  double exp(double)
+
+
+# Turn off error checking!!
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cpdef np.ndarray[np.float64_t, ndim=2] _gauss(np.ndarray[np.float64_t, ndim=1] xc, 
+                                              np.ndarray[np.float64_t, ndim=1] yc, double sigma):
+  cdef np.ndarray[np.float64_t, ndim=2] kern
+  cdef long nx, ny, ix, iy
+  cdef double xx, yy, tmp, den, norm
+
+  nx = xc.size
+  ny = yc.size
+
+  den = 2.0*sigma*sigma
+  norm = 1./(2.0*np.pi*sigma**2)
+
+  kern = np.zeros((nx, ny), dtype='f8')
+
+  for ix in range(nx):
+    xx = xc[ix]
+    if (xx/sigma) > 5 :
+      continue
+    for iy in range(ny):
+      yy = yc[iy]
+      tmp = (xx*xx + yy*yy)/den
+      if tmp < 20.0 :
+        kern[ix, iy] = norm*exp(-tmp)
+  return kern
+
+# Turn off error checking!!
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cpdef np.ndarray[np.float64_t, ndim=2] _gauss_x(np.ndarray[np.float64_t, ndim=1] xc, 
+                                               np.ndarray[np.float64_t, ndim=1] yc, double sigma):
+  cdef np.ndarray[np.float64_t, ndim=2] kern 
+  cdef long nx, ny, ix, iy
+  cdef double xx, yy, tmp, den, norm
+
+  nx = xc.size
+  ny = yc.size
+
+  den = 2.0*sigma*sigma
+  norm = 1./(2.0*np.pi*sigma**4)
+
+  kern = np.zeros((nx, ny), dtype='f8')
+
+  for ix in range(nx):
+    xx = xc[ix]
+    if (xx/sigma) > 5 :
+      continue
+    for iy in range(ny):
+      yy = yc[iy]
+      tmp = (xx*xx + yy*yy)/den
+      if tmp < 20.0 :
+        kern[ix, iy] = -norm*xx*exp(-tmp)
+  return kern
+
+# Turn off error checking!!
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cpdef np.ndarray[np.float64_t, ndim=2] _gauss_y(np.ndarray[np.float64_t, ndim=1] xc, 
+                                               np.ndarray[np.float64_t, ndim=1] yc, double sigma):
+  cdef np.ndarray[np.float64_t, ndim=2] kern 
+  cdef long nx, ny, ix, iy
+  cdef double xx, yy, tmp, den, norm
+
+  nx = xc.size
+  ny = yc.size
+
+  den = 2.0*sigma*sigma
+  norm = 1./(2.0*np.pi*sigma**4)
+
+  kern = np.zeros((nx, ny), dtype='f8')
+
+  for ix in range(nx):
+    xx = xc[ix]
+    if (xx/sigma) > 5 :
+      continue
+    for iy in range(ny):
+      yy = yc[iy]
+      tmp = (xx*xx + yy*yy)/den
+      if tmp < 20.0 :
+        kern[ix, iy] = -norm*yy*exp(-tmp)
+  return kern
 
 # Turn off error checking!!
 @cython.boundscheck(False)
