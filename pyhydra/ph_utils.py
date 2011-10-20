@@ -131,3 +131,28 @@ def arclines(lamptype, minwave, maxwave):
 
 
 
+class OverScan_Trim:
+  """ Simple class to expose a function to trim out overscan regions"""
+  def __init__(self, start_overscan, end_overscan, prescan=20, trim=10):
+    """ start_overscan -- the first overscan pixel
+    end_overscan -- the last overscan pixel
+    prescan -- trim out columns at the beginning and end of the image.
+    trimrows -- trim rows at the top and bottom of the image.
+    """
+    self.start_overscan = start_overscan
+    self.end_overscan = end_overscan
+    self.prescan = prescan
+    self.trim = trim
+
+
+  def __call__(self, arr):
+    nx, ny = arr.shape
+    nx1 = nx-2*self.trim
+    ny1 = ny - (self.end_overscan - self.start_overscan + 1) - 2*self.prescan
+
+    arr1 = np.zeros((nx1, ny1), dtype='f8')
+    iy1 = self.start_overscan - self.prescan
+    arr1[:,0:iy1] = arr[(self.trim+1):(nx-self.trim+1), (self.prescan):(self.start_overscan)]
+    arr1[:,iy1:] = arr[(self.trim+1):(nx-self.trim+1), (self.end_overscan+1):(ny-self.prescan)]
+
+    return arr1
