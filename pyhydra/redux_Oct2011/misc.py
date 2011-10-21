@@ -6,6 +6,7 @@ Nikhil Padmanabhan, Yale.
 
 import pyhydra
 import pyfits
+from ROOTpy import *
 
 
 # Set up the overscan
@@ -34,3 +35,37 @@ def load_hydrarun(name, prefix='BiasOct19'):
   cc = pyhydra.HydraRun(name, imfix=overscan)
   cc.load(prefix)
   return cc
+
+
+def process_single_image_foo(infn, hydrarun):
+  ff = pyfits.open(infn)
+  tmp = ff[0].data
+  ff.close()
+    
+  tmp = hydrarun._imfix(tmp) - hydrarun.get_bias()
+  # Extract traces
+  out, ivar = pyhydra.boxcar_extract(hydrarun.tracelist, tmp)
+  hydrarun.flatten_all(out, nbreak=20)
+  return out, ivar
+
+
+def stack_foo(namelist, hydrarun):
+  outarr = None
+  ivararr = None
+
+  for ii, fn1 in ndenumerate(namelist) :
+    out, ivar = process_single_image_foo(fn1, hydrarun)
+    if outarr is None :
+      outarr = zeros((out.shape[0], out.shape[1], len(namelist)), dtype='f8')
+      ivararr = 0.0*outarr
+    outarr[:,:,ii[0]] = out[:,:]
+    ivararr[:,:,ii[0]] = ivar[:,:]
+
+  return outarr, ivararr
+
+
+def print_trace_centroid(hh):
+  for ii in range(len(hh.tracelist)):
+    print ii, median(hh.tracelist[ii][:,0])
+  
+
