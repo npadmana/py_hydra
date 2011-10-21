@@ -31,6 +31,6 @@ def generate_clean_file(hydrarun, infn, outfn):
 
 
 def load_hydrarun(name, prefix='BiasOct19'):
-  cc = pyhydra.HydraRun('bias_Oct19', imfix=overscan)
+  cc = pyhydra.HydraRun(name, imfix=overscan)
   cc.load(prefix)
   return cc
