@@ -8,6 +8,7 @@ import gsl
 from linefind import *
 import wavesol
 import scipy.ndimage as ndimage
+import cosmics
 
 
 
