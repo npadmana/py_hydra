@@ -229,11 +229,15 @@ def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
   werr = ivar1.sum(axis=-1)
   wgood = werr > 0
   av = (img*ivar1).sum(axis=-1) 
-  av[wgood] /= ivar1[wgood]
+  av[wgood] /= werr[wgood]
  
+  nsamp = img.shape[-1]
+
   # Now sigma clip
   for ii in range(niter):
-    sn = (img - av)*np.sqrt(ivar1)
+    sn = img*0.0
+    for ii in range(nsamp):
+      sn = (img[...,ii] - av)*np.sqrt(ivar1[...,ii])
     ww = sn > sigclip
     ivar1[ww] = 0.0
 
@@ -241,7 +245,7 @@ def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
     werr = ivar1.sum(axis=-1)
     wgood = werr > 0
     av = (img*ivar1).sum(axis=-1) 
-    av[wgood] /= ivar1[wgood]
+    av[wgood] /= werr[wgood]
 
   return av, werr
     
