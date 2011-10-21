@@ -1,0 +1,7 @@
+Python implementation of the LA Cosmics algorithm by Pieter van Dokkum.
+
+This implememtation is from Malte Tewes. I have shamelessly copied it over whole hog.
+
+Requirements : numpy, scipy, pyfits
+
+Nikhil Padmanabhan
