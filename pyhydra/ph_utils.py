@@ -87,6 +87,7 @@ def boxcar_extract(tracelist, img, ivar=None, npix=2):
 def mk_ivar(img, readnoise=0.0, gain=1.0):
   """ Generate a Poisson noise image.
 
+  gain is in electrons/ADU
   """
   # Generate the variance
   var = img*gain + readnoise**2
@@ -94,7 +95,7 @@ def mk_ivar(img, readnoise=0.0, gain=1.0):
   # Invert, avoiding divide by zero
   wwvar = var > 0.0
   ivar = 0.0*var
-  ivar[wwvar] = 1./var[wwvar]
+  ivar[wwvar] = gain**2/var[wwvar]
 
   return ivar
 
@@ -228,4 +229,39 @@ def medfilt(x=None,L=None):
             xout[i] = np.median(xin[i-Lwing:i+Lwing+1]) # (i-Lwing to i+Lwing)
 
     return xout
+
+
+
+def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
+  """ Combine images along axis=-1
+  with an inverse variance weighted sum.
+
+  It then runs a sigma-clipping for n-iterations, effectively setting
+  the ivar of the sigma-clipped points to zero.
+
+  Returns the averaged image and ivar.
+  """
+
+  # Start by doing the first pass
+  ivar1 = ivar.copy()
+  werr = ivar1.sum(axis=-1)
+  wgood = werr > 0
+  av = (img*ivar1).sum(axis=-1) 
+  av[wgood] /= ivar1[wgood]
+ 
+  # Now sigma clip
+  for ii in range(niter):
+    sn = (img - av)*np.sqrt(ivar1)
+    ww = sn > sigclip
+    ivar1[ww] = 0.0
+
+    # Redo
+    werr = ivar1.sum(axis=-1)
+    wgood = werr > 0
+    av = (img*ivar1).sum(axis=-1) 
+    av[wgood] /= ivar1[wgood]
+
+  return av, werr
+    
+
 
