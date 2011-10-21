@@ -37,8 +37,8 @@ class HydraRun :
       if eval('self.%s is not None'%isave):
         print 'Saving %s.....'%isave
         fn = "%s_%s.pickle"%(basename, isave)
-        ff = open(fn, "w")
-        exec("cPickle.dump(self.%s, ff)"%isave)
+        ff = open(fn, "wb")
+        exec("cPickle.dump(self.%s, ff, protocol=2)"%isave)
         ff.close()
       else :
         print 'Ignoring %s....'%isave
@@ -49,7 +49,7 @@ class HydraRun :
       fn = "%s_%s.pickle"%(basename, isave)
       print 'Processing %s from %s......'%(isave, fn)
       try :
-        ff = open(fn)
+        ff = open(fn,'rb')
         exec("self.%s = cPickle.load(ff)"%isave)
         ff.close()
       except :
