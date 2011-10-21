@@ -11,6 +11,8 @@ from ROOTpy import *
 
 # Set up the overscan
 overscan = pyhydra.utils.OverScan_Trim(2067, 2132)
+gain_oct2011 = 1./1.4 # e/ADU
+readnoise_oct2011 = 3.5 # e
 
 def generate_clean_file(hydrarun, infn, outfn):
   """ A simple utility to read in a file, overscan subtract (image fix),
@@ -32,7 +34,7 @@ def generate_clean_file(hydrarun, infn, outfn):
 
 
 def load_hydrarun(name, prefix='BiasOct19'):
-  cc = pyhydra.HydraRun(name, imfix=overscan)
+  cc = pyhydra.HydraRun(name, gain_oct2011, readnoise_oct2011, imfix=overscan)
   cc.load(prefix)
   return cc
 
