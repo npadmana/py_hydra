@@ -10,6 +10,7 @@ import wavesol
 import scipy.ndimage as ndimage
 import cosmics
 from matplotlib.backends.backend_pdf import PdfPages
+from gaussfit import GaussFit
 
 
 
@@ -145,6 +146,40 @@ class HydraRun :
     # Cache traces
     self.traces['tracelist'] = tracelist
 
+
+  def set_tracewidths(self, mkplot=True, npix=5):
+    # Start by doing a simple box car extraction
+    tlist = self.get_tracelist()
+    ntrace = len(tlist)
+    arr = self.get_flat2d()
+    out, outivar = boxcar_cutout(tlist, arr, npix=npix)
+
+    # Do a crude normalization
+    norm = out.sum(axis=1)
+    out1 = out/(norm[:,np.newaxis,:]+1.e-10)
+
+    # Genetaye profiles
+    csec, qaz = weighted_average_clip(out1, outivar)
+
+    widths = []
+    if mkplot :
+      plotfn = '%s_trace_width_qa.pdf'%self.name
+      plotcc = PdfPages(plotfn)
+    for ii in range(ntrace):
+      # Do the actual fits
+      fitcc = GaussFit(np.arange(2*npix+1), csec[ii,:]) 
+      fitcc.optimize(frel=1.e-4, fabs=1.e-6)
+      widths.append(fitcc.xopt[0])
+
+      if mkplot :
+        plt.clf()
+        plt.plot(csec[ii, :])
+        plt.plot(fitcc.model(fitcc.xopt), 'ro')
+        plotcc.savefig()
+
+    # Clean up    
+    plotcc.close()
+    self.traces['widths'] = widths
 
   def get_tracelist(self):
     return self.traces['tracelist']

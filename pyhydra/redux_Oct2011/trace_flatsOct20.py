@@ -12,4 +12,5 @@ cc.set_flat2d(flist)
 # Generate traces
 # Sigma should be greater than the width/sqrt(3)
 cc.generate_traces(sigma=2.0) 
+cc.set_tracewidths()
 cc.save('Trace1')
