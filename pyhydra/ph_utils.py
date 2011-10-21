@@ -83,24 +83,6 @@ def boxcar_extract(tracelist, img, ivar=None, npix=2):
   return (out, outivar)
 
 
-
-def mk_ivar(img, readnoise=0.0, gain=1.0):
-  """ Generate a Poisson noise image.
-
-  gain is in electrons/ADU
-  """
-  # Generate the variance
-  var = img*gain + readnoise**2
-
-  # Invert, avoiding divide by zero
-  wwvar = var > 0.0
-  ivar = 0.0*var
-  ivar[wwvar] = gain**2/var[wwvar]
-
-  return ivar
-
-
-
 def arclines(lamptype, minwave, maxwave):
   """ Return a list of lines.
 
@@ -263,5 +245,4 @@ def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
 
   return av, werr
     
-
 
