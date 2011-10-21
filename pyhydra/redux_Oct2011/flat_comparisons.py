@@ -6,6 +6,12 @@ datadir = '../Oct20/'
 
 nflats = 9
 flist1 = ['flat%02i.fits'%ii for ii in range(nflats)]
+
+nflats = 4
+flist2 = ['flat-DEEP2-23hr-1%02i.fits'%ii for ii in range(nflats)]
+flist1.extend(flist2)
+
+
 flist = [datadir + f1 for f1 in flist1]
 imarr = None
 
