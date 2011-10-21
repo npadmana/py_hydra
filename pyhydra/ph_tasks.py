@@ -9,6 +9,7 @@ from linefind import *
 import wavesol
 import scipy.ndimage as ndimage
 import cosmics
+from matplotlib.backends.backend_pdf import PdfPages
 
 
 
@@ -83,7 +84,8 @@ class HydraRun :
     return self.flat2d['arr']
 
 
-  def generate_traces(self, sigma=2.0, upper=0.1, lower=0.02, eps=0.03, pad=5, rel=True, verbose=True):
+  def generate_traces(self, sigma=2.0, upper=0.1, lower=0.02, eps=0.03, pad=5, rel=True, verbose=True, 
+                      mkplot=True):
     """ The parameters here are those that go into the trace extraction code.
 
     sigma : expected width of the line
@@ -109,7 +111,34 @@ class HydraRun :
     isort = pos.argsort()
     
     # Fill in the traces
-    self.tracelist = [ll[ii] for ii in isort]
+    tmp_tracelist = [ll[ii] for ii in isort]
+
+    # Plot setup
+    if mkplot :
+      plotfn = '%s_trace_draw_qa.pdf'%self.name
+      plotcc = PdfPages(plotfn)
+
+    # Now we clean these up
+    self.tracelist = []
+    for ii in range(len(tmp_tracelist)):
+      itrace = tmp_tracelist[ii]
+      minwave = np.round(itrace[:,1].min())
+      maxwave = np.round(itrace[:,1].max())
+      yy = np.arange(minwave, maxwave+1, dtype='f8')
+      xx = gsl.BSplineUniformInterpolate(itrace[:,1], itrace[:,0], yy, xr=[minwave-1., maxwave+1.], nk=4, nbreak=25)
+      tmp1 = np.zeros((yy.size,2), dtype='f8')
+      tmp1[:,0] = xx
+      tmp1[:,1] = yy
+      self.tracelist.append(tmp1)
+
+      if mkplot :
+        plt.clf()
+        plt.plot(itrace[:,1], itrace[:,0], 'ro')
+        plt.plot(yy,xx,'b-')
+        plotcc.savefig()
+    # Clean up 
+    if mkplot :
+      plotcc.close()
 
 
   def plot_traces(self, vv=None, size=1.0):
