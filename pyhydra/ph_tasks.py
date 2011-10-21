@@ -240,13 +240,17 @@ class HydraRun :
 
 
 
-  def process_single_image(self, infn):
+  def process_single_image(self, infn, nlacosmic=2):
     """ Do all the basic clean up steps for a single image 
     
     Imfix
     Bias subtract.
     Clean up cosmic rays
     Generate a noise map
+
+    nlacosmic -- number of LA Cosmic iterations to do
+      -- A small number means that a smaller number of cosmics get removed, but the code
+         runs faster.
     """
 
     # Read in the data
@@ -260,17 +264,17 @@ class HydraRun :
   
     # Cosmic ray cleanup
     # The parameters here are hardcoded... in general, we should clean these up somewhat
-    cc = cosmics.cosmicimage(arr, gain=self.gain, readnoise=self.readnoise, objlim=1.5)
-    cc.run(5) 
+    cc = cosmics.cosmicsimage(arr, gain=self.gain, readnoise=self.readnoise, objlim=1.5)
+    cc.findsatstars() # Mark the saturated stars
+    cc.run(nlacosmic)
     arr = cc.cleanarray.copy()
 
     # Now generate a median filtered image
-    m5 = ndimage.filters.median_filter(self.cleanarray, size=5, mode='mirror')
+    m5 = ndimage.filters.median_filter(arr, size=5, mode='mirror')
     m5clipped = m5.clip(min=0.00001) # As we will take the sqrt
     ivar = self.gain**2/(self.gain*m5clipped + self.readnoise*self.readnoise)
     # Now set the bad pixels to zero ivar
     ivar[cc.mask == 1] = 0.0
-   
 
     return arr, ivar
 
