@@ -7,6 +7,7 @@ import cPickle
 import gsl
 from linefind import *
 import wavesol
+import scipy.ndimage as ndimage
 
 
 
@@ -14,9 +15,15 @@ import wavesol
 # If the wavelength is not the second index, use imfix
 class HydraRun :
   # Define the basic structures that we fill in 
-  def __init__(self, name, imfix=None):
+  def __init__(self, name, gain, readnoise, imfix=None):
+    """ Set the gain and readnoise 
+    
+    gain is in electrons/ADU
+    """
     self.name = name
     self.imfix = imfix
+    self.gain = gain
+    self.readnoise = readnoise
     # Also define the savelist
     self.savelist = ['bias', 'flat2d', 'tracelist', 'masterarc', 'flat1d', 'wavesol']
     for ii in self.savelist :
@@ -229,6 +236,43 @@ class HydraRun :
     else :
       plt.plot(self.wavesol['lines'], self.wavesol['waves'], 'ro')
       plt.plot(self.wavesol['xev'], self.wavesol['yev'], 'b-')
+
+
+
+  def process_single_image(self, infn):
+    """ Do all the basic clean up steps for a single image 
+    
+    Imfix
+    Bias subtract.
+    Clean up cosmic rays
+    Generate a noise map
+    """
+
+    # Read in the data
+    ff = pyfits.open(infn)
+    arr = ff[0].data
+    ff.close()
+
+    # Image fix and bias subtract
+    arr = self._imfix(arr) - self.get_bias()
+
+  
+    # Cosmic ray cleanup
+    # The parameters here are hardcoded... in general, we should clean these up somewhat
+    cc = cosmics.cosmicimage(arr, gain=self.gain, readnoise=self.readnoise, objlim=1.5)
+    cc.run(5) 
+    arr = cc.cleanarray.copy()
+
+    # Now generate a median filtered image
+    m5 = ndimage.filters.median_filter(self.cleanarray, size=5, mode='mirror')
+    m5clipped = m5.clip(min=0.00001) # As we will take the sqrt
+    ivar = self.gain**2/(self.gain*m5clipped + self.readnoise*self.readnoise)
+    # Now set the bad pixels to zero ivar
+    ivar[cc.mask == 1] = 0.0
+   
+
+    return arr, ivar
+
 
 
 
