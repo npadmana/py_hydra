@@ -86,7 +86,7 @@ def boxcar_cutout(tracelist, img, ivar=None, npix=2):
 
 
 
-def boxcar_extract(tracelist, img, ivar=None, npix=2):
+def gaussian_extract(tracelist, widths, img, ivar=None, npix=5):
   """ Simple boxcar extraction.
 
   Use pixels [-npix, -npix+1, .., 0, .., npix-1, npix]
@@ -106,12 +106,22 @@ def boxcar_extract(tracelist, img, ivar=None, npix=2):
   # Loop over all the traces
   for ispec in range(nspec):
     t1 = tracelist[ispec]
+    w1 = widths[ispec]
     pixarr = np.int32(np.round(t1[:, 1]))
-    icen = np.int32(np.round(t1[:,0]))
+    cen = t1[:,0]
+    icen = np.int32(np.round(cen))
     for ii in range(-npix, npix+1) :
-      out[ispec, pixarr] += img[icen + ii, pixarr]
-      outivar[ispec, pixarr] += ivar[icen + ii, pixarr]
+      # Compute the weights
+      delta_pix = (icen + ii) - cen
+      m1 = np.exp(-delta_pix**2/(2.0*w1**2))
 
+      # Gaussian extraction
+      out[ispec, pixarr] += (img[icen + ii, pixarr] * m1 * ivar[icen+ii, pixarr])
+      outivar[ispec, pixarr] += (m1*m1 * ivar[icen + ii, pixarr])
+
+  # Normalize
+  ww = outivar > 0.0
+  out[ww] /= outivar[ww]
 
   return (out, outivar)
 

@@ -29,7 +29,7 @@ class HydraRun :
     self.readnoise = readnoise
     # Also define the savelist
     #self.savelist = ['bias', 'flat2d', 'traces', 'flat1d', 'wavesol']
-    self.savelist = ['bias', 'flat2d', 'traces']
+    self.savelist = ['bias', 'flat2d', 'traces', 'flat1d']
     for ii in self.savelist :
       exec('self.%s = None'%ii)
 
@@ -200,19 +200,21 @@ class HydraRun :
     return vv
 
 
-###  
-###  def trace_flat1d(self):
-###    arr = self.get_flat2d()
-###    out, ivar = boxcar_extract(self.tracelist, arr)
-###    self.flat1d = {}
-###    self.flat1d['arr'] = out
-###    self.flat1d['ivar'] = ivar
-###
-###    # Also compute and store the median
-###    ww = np.nonzero(ivar > 0.0)
-###    self.flat1d['norm'] = np.median(out[ww])
-###
-###
+  def do_extraction(self, arr, ivar=None, npix=5):
+    return gaussian_extract(self.traces['tracelist'], self.traces['widths'], arr, ivar, npix=npix)
+  
+  def trace_flat1d(self, npix=5):
+    arr = self.get_flat2d()
+    out, ivar = self.do_extraction(arr, npix=npix)
+    self.flat1d = {}
+    self.flat1d['arr'] = out
+    self.flat1d['ivar'] = ivar
+
+    # Also compute and store the median
+    ww = np.nonzero(ivar > 0.0)
+    self.flat1d['norm'] = np.median(out[ww])
+
+
 ###  def generate_smooth_flat(self, itrace, nk=4, nbreak=10):
 ###    # Check basic info
 ###    ntrace, nwave = self.flat1d['arr'].shape
