@@ -273,6 +273,14 @@ class HydraRun :
       raise ValueError, 'Fiber mapping failed!!!'
 
 
+  def slit2trace(self, slitnum):
+    try :
+      retval = self.fibermap.index(slitnum)
+    except ValueError :
+      retval = -1
+    return retval
+
+
 ###  def flatten_all(self, arr, **kwargs):
 ###    ntrace = arr.shape[0]
 ###    for ii in range(ntrace):
