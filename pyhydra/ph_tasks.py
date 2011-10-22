@@ -215,22 +215,37 @@ class HydraRun :
     self.flat1d['norm'] = np.median(out[ww])
 
 
-###  def generate_smooth_flat(self, itrace, nk=4, nbreak=10):
-###    # Check basic info
-###    ntrace, nwave = self.flat1d['arr'].shape
-###    if itrace >= ntrace :
-###      raise ValueError, 'No such trace available'
-###
-###    # Extract the data
-###    xx = np.nonzero(self.flat1d['ivar'][itrace,:] > 0.0)[0]
-###    yy = self.flat1d['arr'][itrace, xx]/self.flat1d['norm']
-###    xev = np.arange(nwave)
-###
-###    # Fit a B-spline
-###    yev = gsl.BSplineUniformInterpolate(xx, yy, xev, xr=[-1.e-4, nwave+1.e-4], nk=nk, nbreak=nbreak)
-###    return yev
-###
-###
+  def generate_smooth_flats(self, nk=4, nbreak=10, mkplot=True):
+    # Check basic info
+    ntrace, nwave = self.flat1d['arr'].shape
+
+    # Set up the storage array
+    fitarr = np.zeros((ntrace, nwave), dtype='f8')
+
+    if mkplot :
+      plotfn = '%s_flat1d_qa.pdf'%self.name
+      plotcc = PdfPages(plotfn)
+    for itrace in range(ntrace):
+      # Extract the data
+      xx = np.nonzero(self.flat1d['ivar'][itrace,:] > 0.0)[0]
+      yy = self.flat1d['arr'][itrace, xx]/self.flat1d['norm']
+      xev = np.arange(nwave)
+      # Fit a B-spline
+      yev = gsl.BSplineUniformInterpolate(xx, yy, xev, xr=[-1.e-4, nwave+1.e-4], nk=nk, nbreak=nbreak)
+      fitarr[itrace, :] = yev
+
+      if mkplot :
+        plt.clf()
+        plt.plot(xx, yy, 'r-')
+        plt.plot(xev, yev, 'b-')
+        plotcc.savefig()
+
+    #--- Clean up
+    self.flat1d['fit'] = fitarr
+    if mkplot :
+      plotcc.close()
+
+
 ###  def flatten_all(self, arr, **kwargs):
 ###    ntrace = arr.shape[0]
 ###    for ii in range(ntrace):
