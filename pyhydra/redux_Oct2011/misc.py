@@ -67,7 +67,7 @@ def stack_foo(namelist, hydrarun):
 
 
 def print_trace_centroid(hh):
-  for ii in range(len(hh.tracelist)):
-    print ii, median(hh.tracelist[ii][:,0])
+  for ii in range(len(hh.traces['tracelist'])):
+    print ii, median(hh.traces['tracelist'][ii][:,0])
   
 
