@@ -200,8 +200,11 @@ class HydraRun :
     return vv
 
 
-  def do_extraction(self, arr, ivar=None, npix=5):
-    return gaussian_extract(self.traces['tracelist'], self.traces['widths'], arr, ivar, npix=npix)
+  def do_extraction(self, arr, ivar=None, npix=5, flatten=False):
+    out, outivar = gaussian_extract(self.traces['tracelist'], self.traces['widths'], arr, ivar, npix=npix)
+    out /= self.flat1d['fit']
+    outivar *= self.flat1d['fit']**2
+
   
   def trace_flat1d(self, npix=5):
     arr = self.get_flat2d()
