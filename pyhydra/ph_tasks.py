@@ -202,8 +202,14 @@ class HydraRun :
 
   def do_extraction(self, arr, ivar=None, npix=5, flatten=False):
     out, outivar = gaussian_extract(self.traces['tracelist'], self.traces['widths'], arr, ivar, npix=npix)
-    out /= self.flat1d['fit']
-    outivar *= self.flat1d['fit']**2
+    
+    if flatten :
+      out /= self.flat1d['fit']
+      outivar *= self.flat1d['fit']**2
+
+    return out, outivar
+
+
 
   
   def trace_flat1d(self, npix=5):
