@@ -29,7 +29,7 @@ class HydraRun :
     self.readnoise = readnoise
     # Also define the savelist
     #self.savelist = ['bias', 'flat2d', 'traces', 'flat1d', 'wavesol']
-    self.savelist = ['bias', 'flat2d', 'traces', 'flat1d']
+    self.savelist = ['bias', 'flat2d', 'traces', 'flat1d', 'fibermap']
     for ii in self.savelist :
       exec('self.%s = None'%ii)
 
@@ -253,6 +253,24 @@ class HydraRun :
     self.flat1d['fit'] = fitarr
     if mkplot :
       plotcc.close()
+
+
+  def map_fibers(self,startfib=100, endfib=2):
+    tracepos = [np.median(itrace[:,0]) for itrace in self.traces['tracelist']]
+    nfibers = abs(startfib - endfib)+1
+    fiddt = (tracepos[-1] - tracepos[0])/nfibers
+    if startfib > endfib :
+      sgn = -1
+
+    self.fibermap = [startfib]
+    for ii in range(1, len(tracepos)) :
+      dt = tracepos[ii] - tracepos[ii-1]
+      idt = int(round(dt/fiddt))
+      nextfib = self.fibermap[-1] + sgn*idt
+      self.fibermap.append(nextfib)
+
+    if self.fibermap[-1] != endfib :
+      raise ValueError, 'Fiber mapping failed!!!'
 
 
 ###  def flatten_all(self, arr, **kwargs):
