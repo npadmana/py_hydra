@@ -7,6 +7,7 @@ Sep 2011
 import numpy as np
 import pyfits
 import os.path
+import cPickle
 
 def load_multiple_fits(flist, hdunum=0, verbose=False, **kwargs):
   """ Read in all the FITS files specified in flist, 
@@ -352,3 +353,15 @@ def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
   return av, werr
     
 
+
+def loadobj(fn):
+  ff=open(fn, 'rb')
+  obj = cPickle.load(ff)
+  ff.close()
+  return obj
+
+
+def saveobj(fn, obj):
+  ff = open(fn, 'wb')
+  cPickle.dump(obj, ff, protocol=2)
+  ff.close()
