@@ -9,10 +9,20 @@ def dilate(arr, fac=10):
   Uses linear interpolation to connect points
   """
   L = arr.size
-  xout = np.arange(fac*L+1, dtype='f8')/fac
+  xout = np.arange(fac*(L-1)+1, dtype='f8')/fac
   xin = np.arange(L, dtype='f8')
   yout = gsl.Spline(xin, arr, 'cspline')(xout)
-  return (xout, yout)
+  return yout
+
+
+def contract(arr, fac=10):
+  """ Inverse of the dilate step. Make sure you call it exactly the same....
+  """
+  # Figure out L 
+  L = (arr.size - 1)/fac + 1
+  ndx = np.arange(L) * fac
+  print ndx.size, L, arr.size, fac 
+  return (arr[ndx]).copy()
 
 
 def matchspec(x, y, npad=None, verbose=True):
