@@ -9,20 +9,24 @@ cc = load_hydrarun('test', 'Trace1')
 #flist1 = ['field-DEEP2-2hr-1%02i.fits'%ii for ii in range(8)]
 #flist2 = ['field-DEEP2-23hr-1%02i.fits'%ii for ii in range(8)]
 
-datadir = '../Oct21/'
-outdir = 'Oct21/'
-flist3 = ['field-DEEP2-23hr-1%02i.fits'%ii for ii in range(7)]
-skylist = ['sky-DEEP2-23hr-1%02i.fits'%ii for ii in range(2)]
-flist4 = ['field-EBOSS%02i.fits'%ii for ii in range(5)]
-skylist2 = ['sky-EBOSS%02i.fits'%ii for ii in range(1)]
+##datadir = '../Oct21/'
+##outdir = 'Oct21/'
+##flist3 = ['field-DEEP2-23hr-1%02i.fits'%ii for ii in range(7)]
+##skylist = ['sky-DEEP2-23hr-1%02i.fits'%ii for ii in range(2)]
+##flist4 = ['field-EBOSS%02i.fits'%ii for ii in range(5)]
+##skylist2 = ['sky-EBOSS%02i.fits'%ii for ii in range(1)]
+##
+##flist = []
+###flist.extend(flist1)
+###flist.extend(flist2)
+##flist.extend(flist3)
+##flist.extend(skylist)
+##flist.extend(flist4)
+##flist.extend(skylist2)
 
-flist = []
-#flist.extend(flist1)
-#flist.extend(flist2)
-flist.extend(flist3)
-flist.extend(skylist)
-flist.extend(flist4)
-flist.extend(skylist2)
+datadir = '../Oct22/'
+outdir = 'Oct22'
+flist = ['field-ELG-2hr-1%02i.fits'%ii for ii in range(12)]
 
 
 # Process all the files in flist
