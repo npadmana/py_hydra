@@ -1,6 +1,7 @@
 import numpy as np
 import gsl
-import utils
+import ph_utils as utils
+import scipy.ndimage as ndimage
 
 def dilate(arr, fac=10):
   """ Take an array and dilate it by a factor of fac.
@@ -60,13 +61,13 @@ def matchspec(x, y, npad=None, verbose=True):
   return np.roll(y1, iroll)[0:nx]
 
 
-def process_one_spec(spec, window=100, dilate_fac=20, sky0=None, npad=1000):
+def process_one_spec(spec, window=200, dilate_fac=20, sky0=None, npad=1000, percentile=0.05):
   """ Do all the basic processing on a single spectrum 
   
   -- continuum subtraction
   -- matching to sky, if sky0 is not None 
   """
-  cont = utils.minfilt(spec, window)
+  cont = ndimage.percentile_filter(spec, percentile, window, mode='mirror')
   tmp = spec - cont
   if sky0 is not None :
     # Dilatethe spectrum and the sky 
