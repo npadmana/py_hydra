@@ -1,6 +1,6 @@
 import numpy as np
 import gsl
-
+import utils
 
 def dilate(arr, fac=10):
   """ Take an array and dilate it by a factor of fac.
@@ -60,4 +60,23 @@ def matchspec(x, y, npad=None, verbose=True):
   return np.roll(y1, iroll)[0:nx]
 
 
+def process_one_spec(spec, window=100, dilate_fac=20, sky0=None, npad=1000):
+  """ Do all the basic processing on a single spectrum 
+  
+  -- continuum subtraction
+  -- matching to sky, if sky0 is not None 
+  """
+  cont = utils.minfilt(spec, window)
+  tmp = spec - cont
+  if sky0 is not None :
+    # Dilatethe spectrum and the sky 
+    spec1 = dilate(tmp, dilate_fac)
+    sky0_d = dilate(sky0, dilate_fac)
+    # Match these objects
+    spec1_m = matchspec(sky0_d, spec1, npad=npad)
+
+    # Contract the 
+    return contract(spec1_m, dilate_fac) 
+  else :
+    return tmp
 
