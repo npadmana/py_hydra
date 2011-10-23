@@ -25,8 +25,8 @@ cc = load_hydrarun('test', 'Trace1')
 ##flist.extend(skylist2)
 
 datadir = '../Oct22/'
-outdir = 'Oct22'
-flist = ['field-ELG-2hr-1%02i.fits'%ii for ii in range(12)]
+outdir = 'Oct22/'
+flist = ['field-ELG-2hr-1%02i.fits'%ii for ii in range(24)]
 
 
 # Process all the files in flist
