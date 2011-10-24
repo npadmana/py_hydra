@@ -186,8 +186,8 @@ class OverScan_Trim:
 
 
 
-def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
-  """ Combine images along axis=-1
+def weighted_average_clip(img, ivar, niter=1, sigclip=5.0, axis=-1, returnmask=False):
+  """ Combine images along axis
   with an inverse variance weighted sum.
 
   It then runs a sigma-clipping for n-iterations, effectively setting
@@ -198,28 +198,39 @@ def weighted_average_clip(img, ivar, niter=1, sigclip=5.0):
 
   # Start by doing the first pass
   ivar1 = ivar.copy()
-  werr = ivar1.sum(axis=-1)
+  werr = ivar1.sum(axis=axis)
   wgood = werr > 0
-  av = (img*ivar1).sum(axis=-1) 
+  av = (img*ivar1).sum(axis=axis) 
   av[wgood] /= werr[wgood]
- 
+  # Now expand the average and werr arrays
+  av = np.expand_dims(av, axis=axis)
+  werr = np.expand_dims(werr, axis=axis)
+
   nsamp = img.shape[-1]
 
   # Now sigma clip
   for ii in range(niter):
-    sn = img*0.0
-    for ii in range(nsamp):
-      sn = (img[...,ii] - av)*np.sqrt(ivar1[...,ii])
+    sn = np.absolute((img-av)*np.sqrt(ivar1))
     ww = sn > sigclip
     ivar1[ww] = 0.0
 
     # Redo
-    werr = ivar1.sum(axis=-1)
+    werr = ivar1.sum(axis=axis)
     wgood = werr > 0
-    av = (img*ivar1).sum(axis=-1) 
+    av = (img*ivar1).sum(axis=axis) 
     av[wgood] /= werr[wgood]
+    # Now expand the average and werr arrays
+    av = np.expand_dims(av, axis=axis)
+    werr = np.expand_dims(werr, axis=axis)
 
-  return av, werr
+
+  av = np.squeeze(av)
+  werr = np.squeeze(werr)
+
+  if returnmask :
+    return av, werr, ivar1
+  else :
+    return av, werr
     
 
 

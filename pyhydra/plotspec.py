@@ -4,12 +4,18 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import scipy.ndimage as ndimage
 
 disp = (7750.11-10372.92)/(4046.13-106.53)
 
-def plotspec(arr):
+def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix=4000):
   ntrace = arr.shape[0]
+  boxsmooth = 1
 
+
+  # Get set up for stuff
+  if ivar is not None :
+    var = 1./(ivar + 1.e-10)
 
   ii = 0
   doLoop = True
@@ -20,14 +26,18 @@ def plotspec(arr):
     spec = arr[ii, :]
     wave = np.arange(spec.size)
     wave = (wave-106.53) * disp + 10372.92
-    med = np.median(spec)
-    mad = np.median(np.absolute(spec - med))
 
-    plt.plot(wave,spec)
-    plt.ylim(med-10*mad, med+10*mad)
+    spsmooth = ndimage.uniform_filter1d(spec, boxsmooth, mode='constant')
+    plt.plot(wave[startpix:endpix],spsmooth[startpix:endpix])
+    if ivar is not None :
+      plt.plot(wave[startpix:endpix],np.sqrt(var[ii, startpix:endpix]), 'r-')
+    plt.ylim(-20, 20)
 
-    print 'Trace : %02i, MAD=%f'%(ii, mad)
-    
+
+    if hydrarun is not None :
+      print tracenums[ii], hydrarun.fibermap[tracenums[ii]]
+
+    # Processing loop
     sel = raw_input()
     if sel == 'q' :
       doLoop = False
@@ -35,4 +45,15 @@ def plotspec(arr):
       ii = (ii+1)%ntrace
     elif sel == 'p' :
       ii = (ii-1 + ntrace)%ntrace
-    
+    elif sel == 'b' :
+      print 'Enter boxcar smoothing in pixels'
+      tmp= raw_input()
+      boxsmooth = int(tmp)
+    elif sel == 'h' :
+      print 'q-quit'
+      print 'h-help'
+      print 'p-previous spectrum'
+      print 'n-next spectrum'
+    else :
+      ii = (ii+1)%ntrace
+
