@@ -42,7 +42,7 @@ for ii in range(nexp):
 nexp = len(flist)
 nspec = len(rr['traces'])
 rr['flist'] = flist
-saveobj('BB-ELG-2hr-cut1.dat', rr)
+saveobj('BB-ELG-2hr-cut1-v2.dat', rr)
 
 obj = None
 for ii in range(nexp):
@@ -72,31 +72,39 @@ ispec = nonzero(rr['traces'] == rr['skytraces'][isky])[0]
 skyref = obj_stack[ispec[0], :]
 
 obj_clean = obj_stack*0.0
+obj_clean_ivar = obj_stack*0.0
 
-# Now continuum subtract and remove the reference sky spectrum
+# Now continuum subtract 
 for ii in range(nspec):
   print 'Median filtering %i spectrum now...'%ii
-  tmp = sky.process_one_spec(obj_stack[ii, :], sky0=skyref, maxshift=100)
+  tmp, tmp2 = sky.process_one_spec(obj_stack[ii, :], sky0=skyref, maxshift=100)
   obj_clean[ii, :] = tmp
+  obj_clean_ivar[ii, :] = tmp2
 
 rr['obj_clean'] = obj_clean
-
+rr['obj_clean_ivar'] = obj_clean_ivar
 
 # Build a reference sky spectrum
-nsky = len(rr['skytraces'])
-skyref = 0.0
-for ii in range(nsky):
-  isky = nonzero(rr['traces'] == rr['skytraces'][ii])[0]
-  skyref += rr['obj_clean'][isky[0],:]
+##nsky = len(rr['skytraces'])
+##skyref = 0.0
+##for ii in range(nsky):
+##  isky = nonzero(rr['traces'] == rr['skytraces'][ii])[0]
+##  skyref += rr['obj_clean'][isky[0],:]
 
-skyref /= nsky
+# Try using all the fibers to extract out the sky
+skyref = 0.0
+for ii in range(nspec):
+  skyref += rr['obj_clean'][ii,:]
+
+
+skyref /= nspec
 rr['sky_ref'] = skyref
 
 
 obj_nosky = rr['obj_clean']*0.0  
-fitmeansky = sky.PCASkySubtract(rr['sky_ref'], 1)
+fitmeansky = sky.DerivSkySubtract(skyref)
 for ii in range(nspec):
-  spec, norm,chi2 = fitmeansky.skysubtract(rr['obj_clean'][ii,:], rr['obj_stack_ivar'][ii,:])
+  spec, norm,chi2 = fitmeansky.skysubtract(rr['obj_clean'][ii,:], rr['obj_clean_ivar'][ii,:])
   print norm
   obj_nosky[ii,:] = spec
 
@@ -118,7 +126,7 @@ for ii in range(nspec):
 
 
 rr['obj_nosky_pca'] = obj_nosky_pca
-saveobj('BB-ELG-2hr-cut1.dat', rr)
+saveobj('BB-ELG-2hr-cut1-v2.dat', rr)
 
 
 

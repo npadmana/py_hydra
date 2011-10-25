@@ -26,7 +26,7 @@ def contract(arr, fac=10):
   return (arr[ndx]).copy()
 
 
-def matchspec(x, y, maxroll, npad=None, verbose=True):
+def matchspec(x, y, yerr, maxroll, npad=None, verbose=True):
   """ Match spectrum y to spectrum x.
 
   x and y are assumed to be appropriately sampled...
@@ -43,8 +43,10 @@ def matchspec(x, y, maxroll, npad=None, verbose=True):
 
   x1 = x.copy()
   y1 = y.copy()
+  yerr1 = yerr.copy()
   x1.resize(nx1)
   y1.resize(nx1)
+  yerr1.resize(nx1)
 
   fx1 = np.fft.rfft(x1)
   fy1 = np.fft.rfft(y1)
@@ -62,10 +64,14 @@ def matchspec(x, y, maxroll, npad=None, verbose=True):
   if verbose :
     print 'Shift of %i pixels detected....'%iroll
 
-  return np.roll(y1, iroll)[0:nx]
+  y_s = np.roll(y1, iroll)[0:nx]
+  yerr_s = np.roll(yerr1, iroll)[0:nx]
 
 
-def process_one_spec(spec, window=200, dilate_fac=20, sky0=None, npad=1000, maxshift=100):
+  return y_s, yerr_s
+
+
+def process_one_spec(spec, err,  window=200, dilate_fac=20, sky0=None, npad=1000, maxshift=100):
   """ Do all the basic processing on a single spectrum 
   
   -- continuum subtraction
@@ -79,13 +85,16 @@ def process_one_spec(spec, window=200, dilate_fac=20, sky0=None, npad=1000, maxs
     # Dilatethe spectrum and the sky 
     spec1 = dilate(tmp, dilate_fac)
     sky0_d = dilate(sky0, dilate_fac)
+    err1 = dilate(err, dilate_fac)
     # Match these objects
-    spec1_m = matchspec(sky0_d, spec1, maxshift*dilate_fac, npad=npad)
+    spec1_m, err1_m = matchspec(sky0_d, spec1, err, maxshift*dilate_fac, npad=npad)
 
     # Contract the 
-    return contract(spec1_m, dilate_fac) 
+    s1 = contract(spec1_m, dilate_fac) 
+    e1 = contract(err1_m, dilate_fac) 
+    return (s1, e1)
   else :
-    return tmp
+    return (tmp, err) # Pass through the error -- nothing really changed there
 
 
 class PCASkySubtract :
