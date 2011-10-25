@@ -153,10 +153,20 @@ class PCASkySubtract :
 
 
 class DerivSkySubtract :
-  def __init__(self, skyspec, startpix=500, endpix=4000):
-    self.sky0 = skyspec
+  def __init__(self, skyspec, polydeg=3, startpix=500, endpix=4000, smooth=1.0):
+
+    skyspec1 = ndimage.gaussian_filter1d(skyspec, smooth, mode='constant')
+    self.smooth = 1.0
+
+    # Work on temmplates
     skyp1 = ndimage.shift(skyspec, 0.1)
-    self.dsky = (skyp1 - skyspec)/0.1
+    skym1 = ndimage.shift(skyspec, -0.1)
+    dsky = (skyp1 - skyspec)/0.1
+    d2sky = (skyp1 + skym1 - 2.0*skyspec)/(0.1**2)
+
+    # Store templates
+    self.templates = [skyspec, dsky, d2sky]
+    self.ntemp = len(self.templates)
 
     self.data = None
     self.ivar = None
@@ -164,7 +174,8 @@ class DerivSkySubtract :
     self.endpix = endpix
     npix = len(skyspec)
     self.xpix = np.arange(npix, dtype='f8')/npix
-    self.nparam = 2  + 3
+    self.polydeg = polydeg # Degree of polynomial
+    self.nparam = self.ntemp*(self.polydeg+1) # There are two components for now
 
     self.opt = nlopt.opt(nlopt.LD_TNEWTON, self.nparam)
     self.opt.set_ftol_rel(1.e-6)
@@ -174,8 +185,10 @@ class DerivSkySubtract :
     self.opt.set_min_objective(self.minfunc)
 
   def resid(self, vec):
-    pp = np.poly1d(vec[1:])
-    model = vec[0] * self.sky0 + (pp(self.xpix))*self.dsky 
+    model = 0.0
+    for ii in range(self.ntemp):
+      pp = np.poly1d(vec[ii*(self.polydeg+1) : (ii+1)*(self.polydeg+1)])
+      model = model + pp(self.xpix)* self.templates[ii]
     return self.data - model
 
 
@@ -185,33 +198,18 @@ class DerivSkySubtract :
     chi2 = rr**2 * self.ivar
     if grad is not None :
       if  len(grad) > 0 :
-        tmp = (2.0*rr*self.sky0 * self.ivar)
-        grad[0] = -tmp[self.startpix:self.endpix].sum()
-        # Not pretty, and can be done much better but...
-        for ii in range(1,self.nparam):
-          tmp = 2.0*rr*self.dsky*self.ivar*self.xpix**(self.nparam-ii-1)
-          grad[ii] = -tmp[self.startpix:self.endpix].sum()
+        for ii in range(self.ntemp):
+          tmp1 = 2.0*rr*self.templates[ii]*self.ivar
+          for jj in range(self.polydeg+1) :
+            tmp = tmp1  * self.xpix**(self.polydeg-jj)
+            grad[ii*(self.polydeg+1) + jj] = -tmp[self.startpix:self.endpix].sum()
+
     return (chi2[self.startpix:self.endpix]).sum()
   
-  def check_diff(self, vec, dx=1.e-1):
-    grad = 0.0*vec
-    out1 = self.minfunc(vec, grad)
-    print grad
-
-    grad1 = 0.0*grad
-    for ii in range(vec.size):
-      vec1 = vec*1.0
-      vec1[ii] += dx
-      y1 = self.minfunc(vec1,  grad)
-      vec1[ii] -= 2*dx
-      y2 = self.minfunc(vec1, grad)
-      grad1[ii] = (y1-y2)/(2*dx)
-
-    print grad1
-
   def skysubtract(self, data, ivar):
-    self.data = data
+    self.data = ndimage.gaussian_filter1d(data, self.smooth, mode='constant')
     self.ivar = ivar
+
 
     startvec = np.zeros((self.nparam, ), dtype='f8')
     outvec = self.opt.optimize(startvec)
@@ -219,6 +217,81 @@ class DerivSkySubtract :
     chi2 = self.minfunc(outvec, None)
 
     return (rr, outvec, chi2)
+
+
+class DerivSkySubtract_v2 :
+  def __init__(self, skyspec, polydeg=1, startpix=500, endpix=4000):
+    self.skyspec = skyspec
+
+
+    # Work on temmplates
+    skyp1 = ndimage.shift(skyspec, 0.1)
+    dsky = (skyp1 - skyspec)/0.1
+
+    # Store templates
+    self.ntemp = 3
+
+    self.data = None
+    self.ivar = None
+    self.startpix = startpix
+    self.endpix = endpix
+    npix = len(skyspec)
+    self.xpix = np.arange(npix, dtype='f8')/npix
+    self.polydeg = polydeg # Degree of polynomial
+    self.nparam = self.ntemp*(self.polydeg+1) + 2 # Add in a smoothing component
+
+    self.opt = nlopt.opt(nlopt.LN_COBYLA, self.nparam)
+    self.opt.set_ftol_rel(1.e-3)
+    self.opt.set_xtol_rel(1.e-5)
+    self.opt.set_ftol_abs(1.e-3)
+    self.opt.set_xtol_abs(1.e-5)
+
+    # We need to set maximum and minimum bounds
+    lb = np.zeros(self.nparam) - np.inf
+    ub = np.zeros(self.nparam) + np.inf
+    lb[0:2] = 1.e-3
+    ub[0:2] = 1.75
+    self.opt.set_lower_bounds(lb)
+    self.opt.set_upper_bounds(ub)
+
+    self.opt.set_min_objective(self.minfunc)
+
+  def resid(self, vec):
+    model = 0.0
+    data1 = ndimage.gaussian_filter1d(self.data, vec[0], mode='constant')
+    t0 = ndimage.gaussian_filter(self.skyspec, vec[1])
+    t0p = ndimage.shift(t0, 0.1)
+    t0m = ndimage.shift(t0, -0.1)
+    dsky = (t0p-t0)/0.1
+    d2sky = (t0p + t0m - 2*t0)/(0.1**2)
+    templates = [t0, dsky, d2sky]
+
+    for ii in range(self.ntemp):
+      istart = ii*(self.polydeg+1) + 2
+      iend = (ii+1)*(self.polydeg+1) + 2
+      pp = np.poly1d(vec[istart : iend])
+      model = model + pp(self.xpix)* templates[ii]
+    return data1 - model
+
+
+  def minfunc(self, vec, grad):
+    rr = self.resid(vec)
+    chi2 = rr**2 * self.ivar
+    return (chi2[self.startpix:self.endpix]).sum()
+  
+  def skysubtract(self, data, ivar):
+    self.data = data
+    self.ivar = ivar
+
+    startvec = np.zeros((self.nparam, ), dtype='f8')
+    startvec[0:2] = 1.0
+    outvec = self.opt.optimize(startvec)
+    rr = self.resid(outvec)
+    chi2 = self.minfunc(outvec, None)
+
+    return (rr, outvec, chi2)
+
+
 
 
 
