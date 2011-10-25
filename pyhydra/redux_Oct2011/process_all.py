@@ -26,7 +26,8 @@ cc = load_hydrarun('test', 'Trace1')
 
 datadir = '../Oct23/'
 outdir = 'Oct23/'
-flist = ['field-ELG-23hr-1%02i.fits'%ii for ii in range(10)]
+#flist = ['field-ELG-23hr-1%02i.fits'%ii for ii in range(10)]
+flist = ['field-ELG-2hr-2%02i.fits'%ii for ii in range(14)]
 
 
 # Process all the files in flist
