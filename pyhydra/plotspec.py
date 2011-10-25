@@ -8,7 +8,7 @@ import scipy.ndimage as ndimage
 
 disp = (7750.11-10372.92)/(4046.13-106.53)
 
-def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix=4000):
+def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix=4000, ylim=None):
   ntrace = arr.shape[0]
   boxsmooth = 1
 
@@ -31,7 +31,10 @@ def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix
     plt.plot(wave[startpix:endpix],spsmooth[startpix:endpix])
     if ivar is not None :
       plt.plot(wave[startpix:endpix],np.sqrt(var[ii, startpix:endpix]), 'r-')
-    plt.ylim(-20, 20)
+    if ylim is None :
+      plt.ylim(-20, 20)
+    else :
+      plt.ylim(*ylim)
 
 
     if hydrarun is not None :
