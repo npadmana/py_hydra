@@ -31,6 +31,7 @@ def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix
     plt.plot(wave[startpix:endpix],spsmooth[startpix:endpix])
     if ivar is not None :
       plt.plot(wave[startpix:endpix],np.sqrt(var[ii, startpix:endpix]), 'r-')
+      plt.plot(wave[startpix:endpix],-np.sqrt(var[ii, startpix:endpix]), 'r-')
     if ylim is None :
       plt.ylim(-20, 20)
     else :
