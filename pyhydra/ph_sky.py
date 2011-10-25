@@ -87,7 +87,7 @@ def process_one_spec(spec, err,  window=200, dilate_fac=20, sky0=None, npad=1000
     sky0_d = dilate(sky0, dilate_fac)
     err1 = dilate(err, dilate_fac)
     # Match these objects
-    spec1_m, err1_m = matchspec(sky0_d, spec1, err, maxshift*dilate_fac, npad=npad)
+    spec1_m, err1_m = matchspec(sky0_d, spec1, err1, maxshift*dilate_fac, npad=npad)
 
     # Contract the 
     s1 = contract(spec1_m, dilate_fac) 
