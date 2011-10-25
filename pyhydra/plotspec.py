@@ -19,6 +19,7 @@ def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix
 
   ii = 0
   doLoop = True
+  title = None
   while doLoop :
     plt.clf()
 
@@ -37,14 +38,24 @@ def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix
     else :
       plt.ylim(*ylim)
 
+    plt.xlabel('Wavelength')
+    plt.ylabel('Counts')
+    if title is not None :
+      plt.title(title)
+
 
     if hydrarun is not None :
       print tracenums[ii], hydrarun.fibermap[tracenums[ii]]
+
+
 
     # Processing loop
     sel = raw_input()
     if sel == 'q' :
       doLoop = False
+    elif sel == 't' :
+      print 'Enter a title:'
+      title = raw_input()
     elif sel == 'n' :
       ii = (ii+1)%ntrace
     elif sel == 'p' :
@@ -53,6 +64,16 @@ def plotspec(arr, ivar=None, hydrarun=None, tracenums=None, startpix=400, endpix
       print 'Enter boxcar smoothing in pixels'
       tmp= raw_input()
       boxsmooth = int(tmp)
+    elif sel == 'j' :
+      print 'Slit # to jump to:'
+      tmp = raw_input()
+      islit = int(tmp)
+      itrace = hydrarun.slit2trace(islit)
+      ww = np.nonzero(tracenums==itrace)[0]
+      if len(ww) != 0 :
+        ii = ww[0]
+      else :
+        print 'No such slit found...'
     elif sel == 'h' :
       print 'q-quit'
       print 'h-help'
