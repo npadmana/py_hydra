@@ -77,7 +77,7 @@ obj_clean_ivar = obj_stack*0.0
 # Now continuum subtract 
 for ii in range(nspec):
   print 'Median filtering %i spectrum now...'%ii
-  tmp, tmp2 = sky.process_one_spec(obj_stack[ii, :], sky0=skyref, maxshift=100)
+  tmp, tmp2 = sky.process_one_spec(obj_stack[ii, :], obj_stack_ivar[ii,:], sky0=skyref, maxshift=100)
   obj_clean[ii, :] = tmp
   obj_clean_ivar[ii, :] = tmp2
 
