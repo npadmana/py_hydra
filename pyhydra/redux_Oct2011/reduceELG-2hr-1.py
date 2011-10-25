@@ -17,7 +17,7 @@ endpix = 4000
 rr = {}
 
 # Figure out the good fibers
-tmp = loadtxt('BB-ELG-2hr-cut-1-go.hydra.iraf.1', usecols=[0,1])
+tmp = loadtxt('ELG2hr1.iraf', usecols=[0,1])
 
 # Get the good slits
 ww = nonzero((tmp[:,1] == 0) | (tmp[:,1] == 1))
@@ -118,7 +118,7 @@ vSVD_full[:, startpix:endpix] = vSVD
 
 rr['vSVD'] = vSVD_full
 
-skycc= sky.PCASkySubtract(rr['vSVD'], nparam=15, startpix=startpix, endpix=endpix)
+skycc= sky.PCASkySubtract(rr['vSVD'], nparam=3, startpix=startpix, endpix=endpix)
 obj_nosky_pca = 0.0*obj_nosky
 for ii in range(nspec):
   spec, tmp, chi2 = skycc.skysubtract(rr['obj_nosky'][ii,:], rr['obj_stack_ivar'][0,:])
